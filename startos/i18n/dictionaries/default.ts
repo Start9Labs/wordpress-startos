@@ -60,6 +60,13 @@ const dict = {
   'Pick the URL WordPress should use when it has no incoming request to derive one from — wp-cron events, email notifications, scheduled-post permalinks, sitemap entries. Each option is labelled with the site it belongs to.': 39,
   'Set Primary URL': 40,
   'Choose a primary URL for one of your sites. Affects URLs WordPress emits outside of an HTTP request (cron, email).': 41,
+
+  // actions/resetAdminPassword.ts
+  'Set/Reset Admin Password': 42,
+  'Generate a new random password for the WordPress admin account on one of your sites and reveal it. Use this for initial sign-in, or any time you need to recover access — once you change the password from inside WordPress this is the only way to get back in.': 43,
+  'Which site to reset the admin password on.': 44,
+  'Admin Password Reset for ${name}': 45,
+  'A new admin password has been set on this site. Sign in at /wp-admin with these credentials.': 46,
 } as const
 
 /**

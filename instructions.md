@@ -12,11 +12,13 @@ You can add as many sites as you want at once. Each row becomes its own independ
 
 ## Logging in
 
-Each site has an auto-generated admin user. To find the credentials:
+Each site has an auto-generated admin user, but the password is only revealed when you ask for one. The package never displays a stale password — every time you run **Set/Reset Admin Password**, it picks a new random password, pushes it into WordPress, and shows it to you.
 
-1. Open the **Actions** tab and click **Show Admin Credentials**.
-2. Select the site you want to log in to.
-3. Copy the username and password.
+To sign in to a fresh site:
+
+1. Open the **Actions** tab and click **Set/Reset Admin Password**.
+2. Select the site you want.
+3. Copy the username and password it returns.
 4. Go back to the **Dashboard** and open the `<site name> (admin)` interface — it lands directly on the WordPress login page. Paste the credentials there.
 
 Each site has two interfaces on the Dashboard sharing the same hostnames:
@@ -24,7 +26,7 @@ Each site has two interfaces on the Dashboard sharing the same hostnames:
 - **`<site name>`** — the public site, opens at `/`.
 - **`<site name> (admin)`** — the WordPress admin dashboard, opens at `/wp-admin/`.
 
-You can rotate the password from inside WordPress's profile screen once you've logged in. Note: the **Show Admin Credentials** action keeps showing the original auto-generated password even after you change it inside WordPress.
+If you lose access — forgot the password, changed it inside WordPress and forgot the new one, etc. — run **Set/Reset Admin Password** again. It replaces whatever password is currently set with a new one and shows it to you. You can also change the password from inside WordPress's profile screen, but if you do, the package won't know about your new password (you're on your own to remember it); the reset action is the only escape hatch.
 
 ## Adding a hostname (Tor, LAN, custom domain)
 
