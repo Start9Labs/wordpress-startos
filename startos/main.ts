@@ -185,6 +185,9 @@ function renderNginxSites(sites: Site[]): string {
 
   client_max_body_size 256M;
 
+  location = /favicon.ico { log_not_found off; access_log off; }
+  location = /robots.txt  { log_not_found off; access_log off; allow all; }
+
   location / {
     try_files $uri $uri/ /index.php?$args;
   }
@@ -195,6 +198,12 @@ function renderNginxSites(sites: Site[]): string {
     fastcgi_pass 127.0.0.1:${PHP_FPM_PORT};
     fastcgi_index index.php;
     fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    fastcgi_param HTTPS on;
+    fastcgi_read_timeout 300s;
+    fastcgi_send_timeout 300s;
+    fastcgi_buffer_size 32k;
+    fastcgi_buffers 8 32k;
+    fastcgi_busy_buffers_size 32k;
   }
 
   location ~ /\\.(?!well-known).* {

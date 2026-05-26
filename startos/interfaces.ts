@@ -13,10 +13,11 @@ export const setInterfaces = sdk.setupInterfaces(async ({ effects }) => {
       const origin = await multi.bindPort(port, {
         protocol: 'http',
       })
+
       const ui = sdk.createInterface(effects, {
         name,
-        id,
-        description: i18n('The ${name} WordPress site', { name }),
+        id: `${id}-site`,
+        description: i18n('Public web interface for ${name}', { name }),
         type: 'ui',
         masked: false,
         schemeOverride: null,
@@ -25,7 +26,22 @@ export const setInterfaces = sdk.setupInterfaces(async ({ effects }) => {
         query: {},
       })
 
-      return origin.export([ui])
+      const admin = sdk.createInterface(effects, {
+        name: i18n('${name} (admin)', { name }),
+        id: `${id}-admin`,
+        description: i18n(
+          'WordPress admin dashboard for ${name}. Run Show Admin Credentials to look up the login.',
+          { name },
+        ),
+        type: 'ui',
+        masked: false,
+        schemeOverride: null,
+        username: null,
+        path: '/wp-admin/',
+        query: {},
+      })
+
+      return origin.export([ui, admin])
     }),
   )
 })

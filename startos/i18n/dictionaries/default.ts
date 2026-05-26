@@ -45,6 +45,11 @@ const dict = {
 
   // init/taskCreateSite.ts
   'Add your first WordPress site!': 32,
+
+  // interfaces.ts (additions)
+  'Public web interface for ${name}': 33,
+  '${name} (admin)': 34,
+  'WordPress admin dashboard for ${name}. Run Show Admin Credentials to look up the login.': 35,
 } as const
 
 /**

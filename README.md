@@ -70,14 +70,18 @@ The dynamic `WP_HOME` / `WP_SITEURL` in `wp-config.php` mean the site is reachab
 
 ## Network Access and Interfaces
 
-The package creates **one MultiHost and one Interface per site**, identified by the site's internal `id`. Hostnames (Tor `.onion`, `.local`, custom domains) are managed through the StartOS UI on each interface. Internally each site listens on its own port (`8000`, `8001`, …) — StartOS routes external hostnames to that port.
+The package creates **one MultiHost and two Interfaces per site** — one for the public site (`/`) and one for the WordPress admin dashboard (`/wp-admin/`). They share hostnames (managed through the StartOS UI on the MultiHost) and the same internal port; the only difference is the path opened when the user clicks the interface. Interface IDs are `<site-id>-site` and `<site-id>-admin`.
+
+Internally each site listens on its own port (`8000`, `8001`, …) — StartOS routes external hostnames to that port.
 
 | Source              | Internal port | External                                  |
 | ------------------- | ------------- | ----------------------------------------- |
-| Site 1              | 8000          | Hostnames added by user to the interface  |
-| Site 2              | 8001          | Hostnames added by user to the interface  |
+| Site 1              | 8000          | Hostnames added by user to the MultiHost (shared by site + admin interfaces) |
+| Site 2              | 8001          | Hostnames added by user to the MultiHost (shared by site + admin interfaces) |
 | …                   | 8002+         | …                                         |
 | Default (catch-all) | 80            | Refuses unknown traffic (`return 444`)    |
+
+`wp-config.php` forces `$_SERVER['HTTPS'] = 'on'` so WordPress's `is_ssl()`-driven redirect logic agrees with the `https://` URLs we emit — StartOS terminates TLS at the platform edge and proxies plain HTTP to the container, so without this `/wp-admin` gets caught in a redirect loop.
 
 ## Actions (StartOS UI)
 

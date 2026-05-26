@@ -17,9 +17,14 @@ Each site has an auto-generated admin user. To find the credentials:
 1. Open the **Actions** tab and click **Show Admin Credentials**.
 2. Select the site you want to log in to.
 3. Copy the username and password.
-4. Open the site from the **Dashboard** tab and append `/wp-admin` to the URL — that's where you sign in.
+4. Go back to the **Dashboard** and open the `<site name> (admin)` interface — it lands directly on the WordPress login page. Paste the credentials there.
 
-Treat these credentials like any other password. You can rotate the password from inside WordPress's profile screen once you've logged in.
+Each site has two interfaces on the Dashboard sharing the same hostnames:
+
+- **`<site name>`** — the public site, opens at `/`.
+- **`<site name> (admin)`** — the WordPress admin dashboard, opens at `/wp-admin/`.
+
+You can rotate the password from inside WordPress's profile screen once you've logged in. Note: the **Show Admin Credentials** action keeps showing the original auto-generated password even after you change it inside WordPress.
 
 ## Adding a hostname (Tor, LAN, custom domain)
 

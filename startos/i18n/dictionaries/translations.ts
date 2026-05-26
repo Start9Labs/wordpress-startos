@@ -35,6 +35,9 @@ export default {
     30: 'Usuario',
     31: 'Contraseña',
     32: '¡Añada su primer sitio WordPress!',
+    33: 'Interfaz web pública para ${name}',
+    34: '${name} (administración)',
+    35: 'Panel de administración de WordPress para ${name}. Ejecute Mostrar credenciales de administrador para obtener el inicio de sesión.',
   },
   de_DE: {
     0: 'Die WordPress-Site ${name}',
@@ -70,6 +73,9 @@ export default {
     30: 'Benutzername',
     31: 'Passwort',
     32: 'Fügen Sie Ihre erste WordPress-Site hinzu!',
+    33: 'Öffentliche Weboberfläche für ${name}',
+    34: '${name} (Admin)',
+    35: 'WordPress-Admin-Dashboard für ${name}. Führen Sie "Admin-Anmeldedaten anzeigen" aus, um die Anmeldung nachzuschlagen.',
   },
   pl_PL: {
     0: 'Witryna WordPress ${name}',
@@ -105,6 +111,9 @@ export default {
     30: 'Nazwa użytkownika',
     31: 'Hasło',
     32: 'Dodaj swoją pierwszą witrynę WordPress!',
+    33: 'Publiczny interfejs WWW dla ${name}',
+    34: '${name} (administracja)',
+    35: 'Panel administratora WordPress dla ${name}. Uruchom "Pokaż dane administratora", aby sprawdzić dane logowania.',
   },
   fr_FR: {
     0: 'Le site WordPress ${name}',
@@ -140,5 +149,8 @@ export default {
     30: "Nom d'utilisateur",
     31: 'Mot de passe',
     32: 'Ajoutez votre premier site WordPress !',
+    33: 'Interface web publique pour ${name}',
+    34: '${name} (admin)',
+    35: 'Tableau de bord administrateur WordPress pour ${name}. Exécutez "Afficher les identifiants administrateur" pour récupérer la connexion.',
   },
 } satisfies Record<string, LangDict>
