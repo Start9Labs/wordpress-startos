@@ -7,19 +7,16 @@ const { InputSpec, Value } = sdk
 export const showAdminCredentials = sdk.Action.withInput(
   'show-admin-credentials',
 
-  async ({ effects }) => {
-    const sites = (await storeJson.read((s) => s.sites).once()) || []
-    return {
-      name: i18n('Show Admin Credentials'),
-      description: i18n(
-        'Reveal the auto-generated WordPress admin username and password for one of your sites.',
-      ),
-      warning: null,
-      allowedStatuses: 'any',
-      group: null,
-      visibility: sites.length > 0 ? 'enabled' : 'hidden',
-    }
-  },
+  async () => ({
+    name: i18n('Show Admin Credentials'),
+    description: i18n(
+      'Reveal the auto-generated WordPress admin username and password for one of your sites.',
+    ),
+    warning: null,
+    allowedStatuses: 'any',
+    group: null,
+    visibility: 'enabled',
+  }),
 
   async ({ effects }) => {
     const sites = (await storeJson.read((s) => s.sites).once()) || []
