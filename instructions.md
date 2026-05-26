@@ -38,21 +38,13 @@ To add a custom domain, follow the standard StartOS domain flow on the site's in
 
 ## Importing an existing WordPress site
 
-You can import a WordPress backup from another host. Two pieces are needed:
+Migrations go through WordPress's own plugin ecosystem rather than a StartOS action:
 
-- the `wp-content/` directory (themes, plugins, uploads)
-- the database as a `.sql` dump at the root of the archive
+1. Create a fresh site here through **Manage Sites**.
+2. Log into its WP admin (see *Logging in* above).
+3. Install a migration plugin — **All-in-One WP Migration**, **Duplicator**, **BackupBuddy**, **UpdraftPlus**, etc. — and use its restore flow to import your backup from the old host.
 
-Combine them into a single `.tar.gz`, `.tar`, or `.zip` archive.
-
-1. Install the **File Browser** package if you don't have it.
-2. Upload your archive into File Browser. Note its path inside File Browser (e.g. `wordpress-exports/my-old-site.tar.gz`).
-3. In WordPress, open the **Actions** tab and click **Import Site**.
-4. Give it a name and paste the archive path. Click **Save**.
-
-The package will extract the archive, import the database, and rewrite the configuration so the site is reachable on whatever hostname you bind to it.
-
-After the import completes, you can find the new site on the **Dashboard**. The original site's admin credentials still work — the auto-generated ones are reserved as a backup. If you want to look them up, use the **Show Admin Credentials** action.
+Each of those plugins handles the database, files, and URL rewriting in its own way; their restore wizards know exactly what their export format looks like and will do the right thing.
 
 ## Removing a site
 

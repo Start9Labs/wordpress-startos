@@ -1,14 +1,11 @@
 import { writeFile, mkdir } from 'fs/promises'
-import { manifest as FilebrowserManifest } from 'filebrowser-startos/startos/manifest'
 import { storeJson, Site } from './fileModels/store.json'
 import { sdk } from './sdk'
 import { i18n } from './i18n'
 import {
-  FILEBROWSER_MOUNTPOINT,
   MARIADB_DATADIR,
   PHP_FPM_PORT,
   SITES_ROOT,
-  dbNameFor,
   sitePathFor,
 } from './utils'
 
@@ -34,21 +31,12 @@ export const main = sdk.setupMain(async ({ effects }) => {
     'mariadb-sub',
   )
 
-  let wpMounts = sdk.Mounts.of().mountVolume({
+  const wpMounts = sdk.Mounts.of().mountVolume({
     volumeId: 'main',
     subpath: null,
     mountpoint: '/data',
     readonly: false,
   })
-  if (sites.some((s) => !!s.pendingImport)) {
-    wpMounts = wpMounts.mountDependency<typeof FilebrowserManifest>({
-      dependencyId: 'filebrowser',
-      volumeId: 'data',
-      subpath: null,
-      mountpoint: FILEBROWSER_MOUNTPOINT,
-      readonly: true,
-    })
-  }
 
   const setupSub = await sdk.SubContainer.of(
     effects,
@@ -117,7 +105,6 @@ export const main = sdk.setupMain(async ({ effects }) => {
           DB_ROOT_PASSWORD: dbRootPassword,
           STORE_PATH: '/data/store.json',
           SITES_ROOT: SITES_ROOT,
-          FILEBROWSER_MOUNTPOINT,
         },
       },
       requires: ['mariadb'],

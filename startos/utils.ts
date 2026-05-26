@@ -1,12 +1,9 @@
 import { utils as sdkUtils } from '@start9labs/start-sdk'
 
 export const MARIADB_DATADIR = '/var/lib/mysql'
-export const MARIADB_PORT = 3306
 export const PHP_FPM_PORT = 9000
 export const SITE_PORT_BASE = 8000
 export const SITES_ROOT = '/data/sites'
-export const FILEBROWSER_MOUNTPOINT = '/mnt/filebrowser'
-export const WORDPRESS_CORE_SRC = '/usr/local/share/wordpress-core'
 
 export const ID_CHARSET = 'a-z,0-9'
 export const ID_LEN = 12

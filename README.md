@@ -88,8 +88,9 @@ Internally each site listens on its own port (`8000`, `8001`, …) — StartOS r
 | Action                        | Purpose                                                                                  |
 | ----------------------------- | ---------------------------------------------------------------------------------------- |
 | **Manage Sites**              | List editor: add new sites by adding rows, rename in place, remove by deleting rows.     |
-| **Import Site**               | Import an existing WordPress install from a `.tar.gz`/`.tar`/`.zip` archive in File Browser. |
 | **Show Admin Credentials**    | Reveal the auto-generated admin username and password for a chosen site.                 |
+
+Migrations from existing WordPress installs go through WordPress's own plugin ecosystem (All-in-One WP Migration, Duplicator, BackupBuddy, UpdraftPlus, etc.) — create a fresh site here, install the migration plugin inside WordPress, and use its restore flow.
 
 ## Backups and Restore
 
@@ -110,9 +111,7 @@ Restored as raw volume snapshots. The package should be stopped during backup fo
 
 ## Dependencies
 
-| Dependency      | Kind       | Required when                  |
-| --------------- | ---------- | ------------------------------ |
-| `filebrowser`   | `exists`   | A site has a pending import.   |
+None. WordPress runs self-contained with bundled MariaDB; migrations from elsewhere are expected to happen through WordPress plugins inside a fresh site.
 
 ## Limitations
 
@@ -141,13 +140,15 @@ internal_ports:
   per_site: 8000+     # one per site, dynamically allocated
   php_fpm: 9000
 multihosts: one per site (id = site id)
-dependencies:
-  filebrowser: { kind: exists, condition: "site has pending import" }
+interfaces_per_site:
+  - "<site-id>-site"  (path: '/')
+  - "<site-id>-admin" (path: '/wp-admin/')
+dependencies: none
 actions:
   - manage
-  - import-site
   - show-admin-credentials
 state:
-  store_json_keys: [dbRootPassword, sites[id, port, name, adminUser, adminPassword, adminEmail, pendingImport]]
+  store_json_keys: [dbRootPassword, sites[id, port, name, adminUser, adminPassword, adminEmail]]
   filesystem_markers: /data/sites/<id>/.installed
+migrations: via WordPress plugins inside a fresh site (no StartOS-side import action)
 ```

@@ -1,18 +1,19 @@
 #!/bin/bash
 # Bootstrap pending WordPress sites:
-#   - for each site in $STORE_PATH .sites[], if .installed marker is missing,
-#     create the database, lay down WP files (fresh install or import), generate
-#     wp-config.php, and run wp core install (or update-db on import).
+#   for each site in $STORE_PATH .sites[], if the .installed marker is missing,
+#   create the database, lay down WP files, generate wp-config.php, and run
+#   wp core install.
 #
 # Idempotent: completed sites are left alone. Designed to be run as a oneshot
-# at every setupMain re-evaluation.
+# at every setupMain re-evaluation. Imports of existing sites go through
+# WordPress plugins (BackupBuddy, Duplicator, All-in-One WP Migration, etc.)
+# — install on a fresh site, restore via the plugin.
 set -euo pipefail
 
 : "${STORE_PATH:?STORE_PATH not set}"
 : "${DB_HOST:?DB_HOST not set}"
 : "${DB_ROOT_PASSWORD:?DB_ROOT_PASSWORD not set}"
 : "${SITES_ROOT:?SITES_ROOT not set}"
-: "${FILEBROWSER_MOUNTPOINT:=/mnt/filebrowser}"
 
 CORE_SRC=/usr/local/share/wordpress-core
 
@@ -91,17 +92,6 @@ PHP
   chmod 600 "$cfg"
 }
 
-extract_archive() {
-  local archive="$1"
-  local dest="$2"
-  case "$archive" in
-    *.tar.gz|*.tgz) tar -xzf "$archive" -C "$dest" ;;
-    *.tar) tar -xf "$archive" -C "$dest" ;;
-    *.zip) unzip -q "$archive" -d "$dest" ;;
-    *) echo "Unsupported archive format: $archive" >&2; return 1 ;;
-  esac
-}
-
 install_fresh() {
   local site_dir="$1"
   local db_name="$2"
@@ -124,49 +114,6 @@ install_fresh() {
     --skip-email
 }
 
-install_import() {
-  local site_dir="$1"
-  local db_name="$2"
-  local archive_rel="$3"
-
-  local archive="$FILEBROWSER_MOUNTPOINT/$archive_rel"
-  if [ ! -f "$archive" ]; then
-    echo "Archive not found at $archive" >&2
-    return 1
-  fi
-
-  mariadb_run -e "CREATE DATABASE IF NOT EXISTS \`$db_name\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
-
-  local tmp
-  tmp=$(mktemp -d)
-  extract_archive "$archive" "$tmp"
-
-  # If the archive contains a single top-level directory, descend into it.
-  local src="$tmp"
-  local entries
-  entries=$(find "$tmp" -mindepth 1 -maxdepth 1 -printf '%P\n')
-  if [ "$(echo "$entries" | wc -l)" = "1" ] && [ -d "$tmp/$entries" ]; then
-    src="$tmp/$entries"
-  fi
-
-  cp -a "$src"/. "$site_dir/"
-  rm -rf "$tmp"
-
-  local sql
-  sql=$(find "$site_dir" -maxdepth 1 -type f -name '*.sql' | head -1 || true)
-  if [ -z "$sql" ]; then
-    echo "No .sql dump found at archive root" >&2
-    return 1
-  fi
-  mariadb_run "$db_name" < "$sql"
-  rm -f "$sql"
-
-  # Always regenerate wp-config.php so it points at our DB + dynamic URLs.
-  write_wp_config "$site_dir" "$db_name"
-
-  wp --path="$site_dir" --allow-root core update-db || true
-}
-
 wait_for_db
 
 jq -c '.sites[]?' "$STORE_PATH" | while read -r site; do
@@ -175,7 +122,6 @@ jq -c '.sites[]?' "$STORE_PATH" | while read -r site; do
   admin_user=$(echo "$site" | jq -r .adminUser)
   admin_password=$(echo "$site" | jq -r .adminPassword)
   admin_email=$(echo "$site" | jq -r .adminEmail)
-  pending_import=$(echo "$site" | jq -r '.pendingImport // empty')
 
   site_dir="$SITES_ROOT/$id"
   db_name="wp_$id"
@@ -186,13 +132,7 @@ jq -c '.sites[]?' "$STORE_PATH" | while read -r site; do
 
   echo "Setting up site '$name' ($id)…"
   mkdir -p "$site_dir"
-
-  if [ -n "$pending_import" ]; then
-    install_import "$site_dir" "$db_name" "$pending_import"
-  else
-    install_fresh "$site_dir" "$db_name" "$name" "$admin_user" "$admin_password" "$admin_email"
-  fi
-
+  install_fresh "$site_dir" "$db_name" "$name" "$admin_user" "$admin_password" "$admin_email"
   chown -R www-data:www-data "$site_dir"
   touch "$site_dir/.installed"
   echo "Site '$name' ready."

@@ -92,7 +92,6 @@ export const manage = sdk.Action.withInput(
         adminUser: 'admin',
         adminPassword: newPassword(),
         adminEmail: `admin@${id}.local`,
-        pendingImport: null,
       }
     })
 

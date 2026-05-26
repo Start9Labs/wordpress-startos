@@ -34,17 +34,5 @@ export const manifest = setupManifest({
     start: null,
     stop: null,
   },
-  dependencies: {
-    filebrowser: {
-      description: {
-        en_US:
-          'Optional. File Browser is used to hand WordPress site archives to this package when importing an existing site. Install File Browser first, upload your archive there, then run the Import Site action here.',
-      },
-      optional: true,
-      metadata: {
-        title: 'File Browser',
-        icon: 'https://raw.githubusercontent.com/Start9Labs/filebrowser-startos/refs/heads/master/icon.svg',
-      },
-    },
-  },
+  dependencies: {},
 })
