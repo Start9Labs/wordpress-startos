@@ -1,25 +1,31 @@
-import { i18n } from './i18n'
+import { storeJson } from './fileModels/store.json'
 import { sdk } from './sdk'
-import { uiPort } from './utils'
+import { i18n } from './i18n'
 
 export const setInterfaces = sdk.setupInterfaces(async ({ effects }) => {
-  const uiMulti = sdk.MultiHost.of(effects, 'ui-multi')
-  const uiMultiOrigin = await uiMulti.bindPort(uiPort, {
-    protocol: 'http',
-  })
-  const ui = sdk.createInterface(effects, {
-    name: i18n('Web UI'),
-    id: 'ui',
-    description: i18n('The web interface of Hello World'),
-    type: 'ui',
-    masked: false,
-    schemeOverride: null,
-    username: null,
-    path: '',
-    query: {},
-  })
+  const sites = (await storeJson.read((s) => s.sites).const(effects)) || []
 
-  const uiReceipt = await uiMultiOrigin.export([ui])
+  return Promise.all(
+    sites.map(async (site) => {
+      const { id, port, name } = site
 
-  return [uiReceipt]
+      const multi = sdk.MultiHost.of(effects, id)
+      const origin = await multi.bindPort(port, {
+        protocol: 'http',
+      })
+      const ui = sdk.createInterface(effects, {
+        name,
+        id,
+        description: i18n('The ${name} WordPress site', { name }),
+        type: 'ui',
+        masked: false,
+        schemeOverride: null,
+        username: null,
+        path: '',
+        query: {},
+      })
+
+      return origin.export([ui])
+    }),
+  )
 })

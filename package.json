@@ -1,12 +1,13 @@
 {
-  "name": "hello-world-startos",
+  "name": "wordpress-startos",
   "scripts": {
     "build": "rm -rf ./javascript && ncc build startos/index.ts -o ./javascript",
     "prettier": "prettier --write startos",
     "check": "tsc --noEmit"
   },
   "dependencies": {
-    "@start9labs/start-sdk": "1.5.2"
+    "@start9labs/start-sdk": "1.5.2",
+    "filebrowser-startos": "github:Start9Labs/filebrowser-startos#master"
   },
   "devDependencies": {
     "@types/node": "^22.19.0",
