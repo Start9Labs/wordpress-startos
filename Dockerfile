@@ -62,6 +62,10 @@ COPY assets/etc/nginx/nginx.conf /etc/nginx/nginx.conf
 COPY assets/etc/php83/php-fpm.d/wordpress.conf /etc/php83/php-fpm.d/www.conf
 COPY assets/etc/php83/conf.d/wordpress.ini /etc/php83/conf.d/99-wordpress.ini
 COPY assets/usr/local/bin/wp-setup.sh /usr/local/bin/wp-setup.sh
+
+# Bundled mu-plugins that get copied into every new site alongside core.
+COPY assets/usr/local/share/wordpress-core-overlay/ /usr/local/share/wordpress-core/
+
 RUN chmod +x /usr/local/bin/wp-setup.sh
 
 RUN mkdir -p /run/nginx /var/log/nginx /etc/nginx/http.d && \

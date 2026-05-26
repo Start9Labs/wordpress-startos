@@ -83,8 +83,21 @@ define('LOGGED_IN_SALT',   '$(gen_secret)');
 define('NONCE_SALT',       '$(gen_secret)');
 
 define('WP_DEBUG', false);
-define('FS_METHOD', 'direct');
+define('WP_DEBUG_DISPLAY', false);
+define('WP_DEBUG_LOG', false);
+
+// Core upgrades are managed by the wordpress-startos package, not by WP itself.
+define('WP_AUTO_UPDATE_CORE', false);
+
+// Force HTTPS for /wp-admin. With \$_SERVER['HTTPS'] forced above this is
+// already effective; setting the constant is defense in depth.
+define('FORCE_SSL_ADMIN', true);
+
+// Prevent in-admin editing of theme/plugin PHP files.
 define('DISALLOW_FILE_EDIT', true);
+
+// Allow direct filesystem writes (no FTP prompt) for plugin installs.
+define('FS_METHOD', 'direct');
 
 if ( !defined('ABSPATH') ) define('ABSPATH', __DIR__ . '/');
 require_once ABSPATH . 'wp-settings.php';

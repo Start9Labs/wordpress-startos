@@ -161,6 +161,23 @@ function renderNginxSites(sites: Site[]): string {
   return 444;
 }`
 
+  const fastcgi = `    include /etc/nginx/fastcgi.conf;
+    fastcgi_pass 127.0.0.1:${PHP_FPM_PORT};
+    fastcgi_index index.php;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    fastcgi_param HTTPS on;
+    fastcgi_read_timeout 300s;
+    fastcgi_send_timeout 300s;
+    fastcgi_buffer_size 32k;
+    fastcgi_buffers 8 32k;
+    fastcgi_busy_buffers_size 32k;`
+
+  const securityHeaders = `    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy "interest-cohort=()" always;
+    add_header Strict-Transport-Security "max-age=31536000" always;`
+
   const blocks = sites.map((site) => {
     const root = sitePathFor(site.id)
     return `server {
@@ -172,8 +189,42 @@ function renderNginxSites(sites: Site[]): string {
 
   client_max_body_size 256M;
 
+${securityHeaders}
+
   location = /favicon.ico { log_not_found off; access_log off; }
   location = /robots.txt  { log_not_found off; access_log off; allow all; }
+
+  # Block XML-RPC entirely — primary brute-force / pingback abuse surface.
+  location = /xmlrpc.php { deny all; access_log off; log_not_found off; }
+
+  # Rate-limit logins.
+  location = /wp-login.php {
+    limit_req zone=wp_login burst=20 nodelay;
+    try_files $uri =404;
+${fastcgi}
+  }
+
+  # No PHP execution under wp-content/uploads — defense against uploaded payloads.
+  location ~* ^/wp-content/uploads/.*\\.php$ {
+    deny all;
+  }
+
+  # Direct PHP hits to wp-includes are not user-facing endpoints.
+  location ~* ^/wp-includes/.*\\.php$ {
+    deny all;
+  }
+
+  # Don't leak version-disclosing or install files.
+  location ~* ^/(readme\\.(html|md|txt)|license\\.txt|wp-config-sample\\.php)$ {
+    deny all;
+  }
+  location = /wp-admin/install.php       { deny all; }
+  location = /wp-admin/maint/repair.php  { deny all; }
+
+  # Block author-archive enumeration.
+  if ($args ~* "(^|&)author=[0-9]+") {
+    return 301 /;
+  }
 
   location / {
     try_files $uri $uri/ /index.php?$args;
@@ -181,16 +232,7 @@ function renderNginxSites(sites: Site[]): string {
 
   location ~ \\.php$ {
     try_files $uri =404;
-    include /etc/nginx/fastcgi.conf;
-    fastcgi_pass 127.0.0.1:${PHP_FPM_PORT};
-    fastcgi_index index.php;
-    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-    fastcgi_param HTTPS on;
-    fastcgi_read_timeout 300s;
-    fastcgi_send_timeout 300s;
-    fastcgi_buffer_size 32k;
-    fastcgi_buffers 8 32k;
-    fastcgi_busy_buffers_size 32k;
+${fastcgi}
   }
 
   location ~ /\\.(?!well-known).* {

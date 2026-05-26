@@ -2,7 +2,7 @@ import { z } from '@start9labs/start-sdk'
 import { storeJson, Site } from '../fileModels/store.json'
 import { sdk } from '../sdk'
 import { i18n } from '../i18n'
-import { newPassword, newSiteId, nextSitePort } from '../utils'
+import { newAdminUser, newPassword, newSiteId, nextSitePort } from '../utils'
 
 const { InputSpec, Value, List } = sdk
 
@@ -89,7 +89,7 @@ export const manage = sdk.Action.withInput(
         id,
         port,
         name: row.name,
-        adminUser: 'admin',
+        adminUser: newAdminUser(),
         adminPassword: newPassword(),
         adminEmail: `admin@${id}.local`,
       }

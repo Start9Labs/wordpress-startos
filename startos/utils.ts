@@ -10,6 +10,7 @@ export const ID_LEN = 12
 export const PASSWORD_CHARSET = 'a-z,A-Z,0-9'
 export const PASSWORD_LEN = 32
 export const SECRET_LEN = 64
+export const ADMIN_USER_LEN = 16
 
 export function newSiteId(): string {
   return sdkUtils.getDefaultString({ charset: ID_CHARSET, len: ID_LEN })
@@ -21,6 +22,10 @@ export function newPassword(): string {
 
 export function newSecret(): string {
   return sdkUtils.getDefaultString({ charset: PASSWORD_CHARSET, len: SECRET_LEN })
+}
+
+export function newAdminUser(): string {
+  return 'a' + sdkUtils.getDefaultString({ charset: 'a-z,0-9', len: ADMIN_USER_LEN - 1 })
 }
 
 export function dbNameFor(siteId: string): string {
