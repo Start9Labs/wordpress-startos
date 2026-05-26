@@ -62,11 +62,14 @@ const dict = {
   'Choose a primary URL for one of your sites. Affects URLs WordPress emits outside of an HTTP request (cron, email).': 41,
 
   // actions/resetAdminPassword.ts
-  'Set/Reset Admin Password': 42,
-  'Generate a new random password for the WordPress admin account on one of your sites and reveal it. Use this for initial sign-in, or any time you need to recover access — once you change the password from inside WordPress this is the only way to get back in.': 43,
+  'Reset Admin Password': 42,
+  'Generate a new random password for the WordPress admin account on one of your sites and reveal it. Run this for the initial sign-in on a fresh site, or any time you need to recover access — once you change the password from inside WordPress this is the only way to get back in.': 43,
   'Which site to reset the admin password on.': 44,
   'Admin Password Reset for ${name}': 45,
   'A new admin password has been set on this site. Sign in at /wp-admin with these credentials.': 46,
+
+  // init/taskSetAdminPassword.ts
+  'Set the admin password for ${name}': 47,
 } as const
 
 /**

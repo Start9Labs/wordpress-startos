@@ -12,14 +12,14 @@ You can add as many sites as you want at once. Each row becomes its own independ
 
 ## Logging in
 
-Each site has an auto-generated admin user, but the password is only revealed when you ask for one. The package never displays a stale password — every time you run **Set/Reset Admin Password**, it picks a new random password, pushes it into WordPress, and shows it to you.
+Each site has an auto-generated admin user, but the password is only revealed when you ask for one. The package never displays a stale password — every time you run **Reset Admin Password**, it picks a new random password, pushes it into WordPress, and shows it to you.
 
-To sign in to a fresh site:
+When you create a new site, a critical task appears prompting you to **Set the admin password for `<site name>`**. Clicking it opens the **Reset Admin Password** action pre-filled with that site. The task clears once you complete the action.
 
-1. Open the **Actions** tab and click **Set/Reset Admin Password**.
-2. Select the site you want.
-3. Copy the username and password it returns.
-4. Go back to the **Dashboard** and open the `<site name> (admin)` interface — it lands directly on the WordPress login page. Paste the credentials there.
+To sign in afterwards:
+
+1. Copy the username and password the action returns.
+2. Go back to the **Dashboard** and open the `<site name> (admin)` interface — it lands directly on the WordPress login page. Paste the credentials there.
 
 Each site has two interfaces on the Dashboard sharing the same hostnames:
 

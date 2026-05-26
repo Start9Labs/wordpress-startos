@@ -89,7 +89,7 @@ Internally each site listens on its own port (`8000`, `8001`, …) — StartOS r
 | ----------------------------- | ---------------------------------------------------------------------------------------- |
 | **Manage Sites**              | List editor: add new sites by adding rows, rename in place, remove by deleting rows.     |
 | **Set Primary URL**           | For each site, choose the URL WordPress should use when it has no incoming request to derive one from (wp-cron, email notifications, scheduled posts, sitemap entries). |
-| **Set/Reset Admin Password**  | Generate a new random password for a chosen site's admin account, push it into WordPress via wp-cli, and reveal it. Used for initial sign-in and for recovery if the password is ever lost. |
+| **Reset Admin Password**      | Generate a new random password for a chosen site's admin account, push it into WordPress via wp-cli, and reveal it. Used for initial sign-in (auto-prompted via a critical task when a site is created) and for recovery if the password is ever lost. |
 
 Migrations from existing WordPress installs go through WordPress's own plugin ecosystem (All-in-One WP Migration, Duplicator, BackupBuddy, UpdraftPlus, etc.) — create a fresh site here, install the migration plugin inside WordPress, and use its restore flow.
 

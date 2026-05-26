@@ -6,6 +6,7 @@ import { actions } from '../actions'
 import { restoreInit } from '../backups'
 import { seedSecrets } from './seedSecrets'
 import { taskCreateSite } from './taskCreateSite'
+import { taskSetAdminPassword } from './taskSetAdminPassword'
 
 export const init = sdk.setupInit(
   restoreInit,
@@ -15,6 +16,7 @@ export const init = sdk.setupInit(
   actions,
   seedSecrets,
   taskCreateSite,
+  taskSetAdminPassword,
 )
 
 export const uninit = sdk.setupUninit(versionGraph)

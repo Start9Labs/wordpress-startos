@@ -11,9 +11,9 @@ export const resetAdminPassword = sdk.Action.withInput(
   async ({ effects }) => {
     const sites = (await storeJson.read((s) => s.sites).const(effects)) || []
     return {
-      name: i18n('Set/Reset Admin Password'),
+      name: i18n('Reset Admin Password'),
       description: i18n(
-        'Generate a new random password for the WordPress admin account on one of your sites and reveal it. Use this for initial sign-in, or any time you need to recover access — once you change the password from inside WordPress this is the only way to get back in.',
+        'Generate a new random password for the WordPress admin account on one of your sites and reveal it. Run this for the initial sign-in on a fresh site, or any time you need to recover access — once you change the password from inside WordPress this is the only way to get back in.',
       ),
       warning: null,
       allowedStatuses: 'only-running',
