@@ -56,6 +56,12 @@ export const main = sdk.setupMain(async ({ effects }) => {
     wpMounts,
     'nginx-sub',
   )
+  const wpCronSub = await sdk.SubContainer.of(
+    effects,
+    { imageId: 'wordpress' },
+    wpMounts,
+    'wp-cron-sub',
+  )
 
   await mkdir(`${nginxSub.rootfs}/etc/nginx/http.d`, { recursive: true })
   await writeFile(
@@ -148,6 +154,24 @@ export const main = sdk.setupMain(async ({ effects }) => {
         },
       },
       requires: ['php-fpm'],
+    })
+    .addDaemon('wp-cron', {
+      subcontainer: wpCronSub,
+      exec: {
+        command: ['/usr/local/bin/wp-cron-loop.sh'],
+        env: {
+          SITES_ROOT: SITES_ROOT,
+          WP_CRON_INTERVAL: '300',
+        },
+      },
+      ready: {
+        display: i18n('Scheduler'),
+        fn: async () => ({
+          result: 'success',
+          message: i18n('Cron loop running'),
+        }),
+      },
+      requires: ['setup-sites'],
     })
 
   return daemons

@@ -89,6 +89,13 @@ define('WP_DEBUG_LOG', false);
 // Core upgrades are managed by the wordpress-startos package, not by WP itself.
 define('WP_AUTO_UPDATE_CORE', false);
 
+// Disable wp-cron's per-request loopback HTTP call. The wordpress-startos
+// package runs cron from a sidecar daemon every 5 minutes — leaving the
+// loopback enabled causes page timeouts when the public hostname can't
+// resolve from inside the container (during DNS propagation, cert
+// provisioning, etc.).
+define('DISABLE_WP_CRON', true);
+
 // Force HTTPS for /wp-admin. With \$_SERVER['HTTPS'] forced above this is
 // already effective; setting the constant is defense in depth.
 define('FORCE_SSL_ADMIN', true);

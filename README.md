@@ -29,7 +29,7 @@ Host any number of independent WordPress sites side by side on StartOS. Each sit
 | ------------- | ------------------------------------------------------------------------------------ |
 | Images        | `wordpress` (built from `./Dockerfile` — Alpine 3.21 + nginx + PHP 8.3-FPM + wp-cli + WP 7.0 core) / `mariadb:11.8.7` |
 | Architectures | x86_64, aarch64                                                                      |
-| Daemons       | `mariadb`, `setup-sites` (oneshot), `php-fpm`, `nginx`                               |
+| Daemons       | `mariadb`, `setup-sites` (oneshot), `php-fpm`, `nginx`, `wp-cron`                    |
 
 `wordpress` and `mariadb` run as separate subcontainers and communicate over the loopback interface (`127.0.0.1`). nginx and PHP-FPM share the same image; PHP-FPM listens on `127.0.0.1:9000`. WordPress core (7.0) is baked into the image at `/usr/local/share/wordpress-core` and copied into each new site's data directory on first setup.
 
@@ -108,6 +108,11 @@ Restored as raw volume snapshots. The package should be stopped during backup fo
 | `mariadb`      | `mariadb -e 'SELECT 1'` against the loopback DB.    |
 | `php-fpm`      | Port `9000` listening.                              |
 | `nginx`        | First site's port listening, or success-with-message when no sites exist. |
+| `wp-cron`      | Daemon is up. (Loops every 5 minutes calling `wp cron event run --due-now` for each installed site.) |
+
+### Why an internal cron daemon
+
+`wp-config.php` sets `DISABLE_WP_CRON = true`. WordPress's default behavior fires `wp-cron.php` via a non-blocking loopback HTTP `POST` to `https://<HTTP_HOST>/wp-cron.php` on every page load. When `<HTTP_HOST>` is a clearnet hostname that the container can't resolve back to itself (DNS hasn't propagated yet, the cert is still being issued, the public IP loops through the edge proxy slowly), the loopback request blocks the originating page-load response and the site appears to time out. The sidecar daemon runs `wp-cli cron event run --due-now` against each `/data/sites/<id>/` every 5 minutes; this is the same pattern WordPress production hosts use.
 
 ## Dependencies
 

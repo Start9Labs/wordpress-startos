@@ -38,6 +38,8 @@ export default {
     33: 'Interfaz web pública para ${name}',
     34: '${name} (administración)',
     35: 'Panel de administración de WordPress para ${name}. Ejecute Mostrar credenciales de administrador para obtener el inicio de sesión.',
+    36: 'Programador',
+    37: 'Bucle de cron en ejecución',
   },
   de_DE: {
     0: 'Die WordPress-Site ${name}',
@@ -76,6 +78,8 @@ export default {
     33: 'Öffentliche Weboberfläche für ${name}',
     34: '${name} (Admin)',
     35: 'WordPress-Admin-Dashboard für ${name}. Führen Sie "Admin-Anmeldedaten anzeigen" aus, um die Anmeldung nachzuschlagen.',
+    36: 'Planer',
+    37: 'Cron-Schleife läuft',
   },
   pl_PL: {
     0: 'Witryna WordPress ${name}',
@@ -114,6 +118,8 @@ export default {
     33: 'Publiczny interfejs WWW dla ${name}',
     34: '${name} (administracja)',
     35: 'Panel administratora WordPress dla ${name}. Uruchom "Pokaż dane administratora", aby sprawdzić dane logowania.',
+    36: 'Harmonogram',
+    37: 'Pętla cron działa',
   },
   fr_FR: {
     0: 'Le site WordPress ${name}',
@@ -152,5 +158,7 @@ export default {
     33: 'Interface web publique pour ${name}',
     34: '${name} (admin)',
     35: 'Tableau de bord administrateur WordPress pour ${name}. Exécutez "Afficher les identifiants administrateur" pour récupérer la connexion.',
+    36: 'Planificateur',
+    37: 'Boucle cron en cours',
   },
 } satisfies Record<string, LangDict>

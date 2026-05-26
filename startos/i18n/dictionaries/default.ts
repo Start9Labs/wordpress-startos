@@ -50,6 +50,10 @@ const dict = {
   'Public web interface for ${name}': 33,
   '${name} (admin)': 34,
   'WordPress admin dashboard for ${name}. Run Show Admin Credentials to look up the login.': 35,
+
+  // main.ts (wp-cron daemon)
+  Scheduler: 36,
+  'Cron loop running': 37,
 } as const
 
 /**
