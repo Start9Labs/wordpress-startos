@@ -40,6 +40,10 @@ export default {
     35: 'Panel de administración de WordPress para ${name}. Ejecute Mostrar credenciales de administrador para obtener el inicio de sesión.',
     36: 'Programador',
     37: 'Bucle de cron en ejecución',
+    38: 'URL principal',
+    39: 'Elija la URL que WordPress debe usar cuando no tenga una solicitud entrante de la que derivarla — eventos de wp-cron, notificaciones por correo, enlaces de entradas programadas, entradas de sitemap. Cada opción está etiquetada con el sitio al que pertenece.',
+    40: 'Establecer URL principal',
+    41: 'Elija una URL principal para uno de sus sitios. Afecta a las URL que WordPress emite fuera de una solicitud HTTP (cron, correo).',
   },
   de_DE: {
     0: 'Die WordPress-Site ${name}',
@@ -80,6 +84,10 @@ export default {
     35: 'WordPress-Admin-Dashboard für ${name}. Führen Sie "Admin-Anmeldedaten anzeigen" aus, um die Anmeldung nachzuschlagen.',
     36: 'Planer',
     37: 'Cron-Schleife läuft',
+    38: 'Primäre URL',
+    39: 'Wählen Sie die URL, die WordPress verwenden soll, wenn keine eingehende Anfrage zum Ableiten vorhanden ist — wp-cron-Ereignisse, E-Mail-Benachrichtigungen, Permalinks für geplante Beiträge, Sitemap-Einträge. Jede Option ist mit der zugehörigen Site beschriftet.',
+    40: 'Primäre URL festlegen',
+    41: 'Wählen Sie eine primäre URL für eine Ihrer Sites. Betrifft URLs, die WordPress außerhalb einer HTTP-Anfrage ausgibt (Cron, E-Mail).',
   },
   pl_PL: {
     0: 'Witryna WordPress ${name}',
@@ -120,6 +128,10 @@ export default {
     35: 'Panel administratora WordPress dla ${name}. Uruchom "Pokaż dane administratora", aby sprawdzić dane logowania.',
     36: 'Harmonogram',
     37: 'Pętla cron działa',
+    38: 'URL główny',
+    39: 'Wybierz URL, którego WordPress powinien używać, gdy nie ma przychodzącego żądania, z którego mógłby go wyprowadzić — zdarzenia wp-cron, powiadomienia e-mail, permalinki zaplanowanych wpisów, wpisy mapy witryny. Każda opcja jest oznaczona witryną, do której należy.',
+    40: 'Ustaw URL główny',
+    41: 'Wybierz URL główny dla jednej z witryn. Wpływa na URL-e generowane przez WordPress poza żądaniem HTTP (cron, e-mail).',
   },
   fr_FR: {
     0: 'Le site WordPress ${name}',
@@ -160,5 +172,9 @@ export default {
     35: 'Tableau de bord administrateur WordPress pour ${name}. Exécutez "Afficher les identifiants administrateur" pour récupérer la connexion.',
     36: 'Planificateur',
     37: 'Boucle cron en cours',
+    38: 'URL principale',
+    39: 'Choisissez l\'URL que WordPress doit utiliser lorsqu\'il n\'a pas de requête entrante d\'où la dériver — événements wp-cron, notifications par e-mail, permaliens de publications programmées, entrées du sitemap. Chaque option est étiquetée avec le site auquel elle appartient.',
+    40: 'Définir l\'URL principale',
+    41: 'Choisissez une URL principale pour l\'un de vos sites. Affecte les URL que WordPress émet hors d\'une requête HTTP (cron, e-mail).',
   },
 } satisfies Record<string, LangDict>

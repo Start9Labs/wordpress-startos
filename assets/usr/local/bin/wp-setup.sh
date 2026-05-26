@@ -60,9 +60,28 @@ write_wp_config() {
 // is reachable and not.
 \$_SERVER['HTTPS'] = 'on';
 
-\$_host = \$_SERVER['HTTP_HOST'] ?? \$_SERVER['SERVER_NAME'] ?? 'localhost';
-define('WP_HOME',    'https://' . \$_host);
-define('WP_SITEURL', 'https://' . \$_host);
+// In an HTTP request: derive WP_HOME from the Host header so every
+// hostname routed to us by StartOS serves correctly with no per-hostname
+// configuration. Outside an HTTP request (wp-cli, wp-cron daemon): fall
+// back to the user-chosen primary URL written to .primary-url by the
+// setup-sites oneshot. Without that fallback, cron-generated links
+// (email notifications, scheduled-post permalinks) come out as
+// http://localhost/...
+\$_host = \$_SERVER['HTTP_HOST'] ?? null;
+if ( !empty(\$_host) ) {
+    define('WP_HOME',    'https://' . \$_host);
+    define('WP_SITEURL', 'https://' . \$_host);
+} else {
+    \$_primary_file = __DIR__ . '/.primary-url';
+    \$_primary = is_readable(\$_primary_file)
+        ? trim((string) @file_get_contents(\$_primary_file))
+        : '';
+    if (\$_primary === '') {
+        \$_primary = 'http://localhost';
+    }
+    define('WP_HOME',    \$_primary);
+    define('WP_SITEURL', \$_primary);
+}
 
 define('DB_NAME',     '$db_name');
 define('DB_USER',     'root');
@@ -134,6 +153,19 @@ install_fresh() {
     --skip-email
 }
 
+sync_primary_url() {
+  local site_dir="$1"
+  local primary="$2"
+  local file="$site_dir/.primary-url"
+  if [ -n "$primary" ]; then
+    printf '%s\n' "$primary" > "$file"
+    chown www-data:www-data "$file" 2>/dev/null || true
+    chmod 644 "$file"
+  else
+    rm -f "$file"
+  fi
+}
+
 wait_for_db
 
 jq -c '.sites[]?' "$STORE_PATH" | while read -r site; do
@@ -142,18 +174,21 @@ jq -c '.sites[]?' "$STORE_PATH" | while read -r site; do
   admin_user=$(echo "$site" | jq -r .adminUser)
   admin_password=$(echo "$site" | jq -r .adminPassword)
   admin_email=$(echo "$site" | jq -r .adminEmail)
+  primary_url=$(echo "$site" | jq -r '.primaryUrl // empty')
 
   site_dir="$SITES_ROOT/$id"
   db_name="wp_$id"
 
-  if [ -f "$site_dir/.installed" ]; then
-    continue
+  if [ ! -f "$site_dir/.installed" ]; then
+    echo "Setting up site '$name' ($id)…"
+    mkdir -p "$site_dir"
+    install_fresh "$site_dir" "$db_name" "$name" "$admin_user" "$admin_password" "$admin_email"
+    chown -R www-data:www-data "$site_dir"
+    touch "$site_dir/.installed"
+    echo "Site '$name' ready."
   fi
 
-  echo "Setting up site '$name' ($id)…"
-  mkdir -p "$site_dir"
-  install_fresh "$site_dir" "$db_name" "$name" "$admin_user" "$admin_password" "$admin_email"
-  chown -R www-data:www-data "$site_dir"
-  touch "$site_dir/.installed"
-  echo "Site '$name' ready."
+  # Always reconcile .primary-url from store.json — runs whenever the
+  # user updates the primary via the Set Primary URL action.
+  sync_primary_url "$site_dir" "$primary_url"
 done

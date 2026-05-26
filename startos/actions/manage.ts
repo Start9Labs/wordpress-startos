@@ -92,6 +92,7 @@ export const manage = sdk.Action.withInput(
         adminUser: newAdminUser(),
         adminPassword: newPassword(),
         adminEmail: `admin@${id}.local`,
+        primaryUrl: null,
       }
     })
 

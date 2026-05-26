@@ -8,6 +8,7 @@ const siteShape = z.object({
   adminUser: z.string(),
   adminPassword: z.string(),
   adminEmail: z.string(),
+  primaryUrl: z.string().nullable().default(null),
 })
 
 const shape = z.object({

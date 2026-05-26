@@ -54,6 +54,12 @@ const dict = {
   // main.ts (wp-cron daemon)
   Scheduler: 36,
   'Cron loop running': 37,
+
+  // actions/setPrimaryUrl.ts
+  'Primary URL': 38,
+  'Pick the URL WordPress should use when it has no incoming request to derive one from — wp-cron events, email notifications, scheduled-post permalinks, sitemap entries. Each option is labelled with the site it belongs to.': 39,
+  'Set Primary URL': 40,
+  'Choose a primary URL for one of your sites. Affects URLs WordPress emits outside of an HTTP request (cron, email).': 41,
 } as const
 
 /**

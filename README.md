@@ -88,6 +88,7 @@ Internally each site listens on its own port (`8000`, `8001`, …) — StartOS r
 | Action                        | Purpose                                                                                  |
 | ----------------------------- | ---------------------------------------------------------------------------------------- |
 | **Manage Sites**              | List editor: add new sites by adding rows, rename in place, remove by deleting rows.     |
+| **Set Primary URL**           | For each site, choose the URL WordPress should use when it has no incoming request to derive one from (wp-cron, email notifications, scheduled posts, sitemap entries). |
 | **Show Admin Credentials**    | Reveal the auto-generated admin username and password for a chosen site.                 |
 
 Migrations from existing WordPress installs go through WordPress's own plugin ecosystem (All-in-One WP Migration, Duplicator, BackupBuddy, UpdraftPlus, etc.) — create a fresh site here, install the migration plugin inside WordPress, and use its restore flow.
@@ -113,6 +114,13 @@ Restored as raw volume snapshots. The package should be stopped during backup fo
 ### Why an internal cron daemon
 
 `wp-config.php` sets `DISABLE_WP_CRON = true`. WordPress's default behavior fires `wp-cron.php` via a non-blocking loopback HTTP `POST` to `https://<HTTP_HOST>/wp-cron.php` on every page load. When `<HTTP_HOST>` is a clearnet hostname that the container can't resolve back to itself (DNS hasn't propagated yet, the cert is still being issued, the public IP loops through the edge proxy slowly), the loopback request blocks the originating page-load response and the site appears to time out. The sidecar daemon runs `wp-cli cron event run --due-now` against each `/data/sites/<id>/` every 5 minutes; this is the same pattern WordPress production hosts use.
+
+### URL resolution
+
+`wp-config.php` derives `WP_HOME` / `WP_SITEURL` two ways:
+
+- **Inside an HTTP request:** from `$_SERVER['HTTP_HOST']`. Any hostname StartOS routes to our internal port works out of the box — no per-hostname configuration. `$_SERVER['HTTPS']` is forced `'on'` so WordPress's `is_ssl()` agrees with the `https://` URLs we emit, since StartOS terminates TLS at the edge and forwards plain HTTP to the container.
+- **Outside an HTTP request** (wp-cli, wp-cron daemon): from `/data/sites/<id>/.primary-url`, populated by the **Set Primary URL** action via `store.json`. The setup-sites oneshot reconciles the file on every run, so the value goes live the next time setupMain re-evaluates after the action runs. Falls back to `http://localhost` if unset — fine for sites that don't run scheduled events that emit URLs, breaks email links / sitemaps for sites that do.
 
 ## Dependencies
 
