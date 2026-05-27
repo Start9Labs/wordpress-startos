@@ -77,10 +77,7 @@ export const resetAdminPassword = sdk.Action.withInput(
     )
     await storeJson.merge(effects, { sites: updated })
 
-    // Clear the per-site "Set the admin password for <name>" task that
-    // taskSetAdminPassword surfaces on every init. The task carries no
-    // input-not-matches trigger (see comment there), so it doesn't
-    // auto-clear when the action runs — we have to dismiss it here.
+    // Dismiss the per-site task — see taskSetAdminPassword.ts.
     await sdk.action
       .clearTask(effects, `set-admin-password-${site.id}`)
       .catch(() => {})
