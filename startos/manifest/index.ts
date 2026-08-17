@@ -2,19 +2,28 @@ import { setupManifest } from '@start9labs/start-sdk'
 import { long, short } from './i18n'
 
 export const manifest = setupManifest({
-  id: 'hello-world',
-  title: 'Hello World',
-  license: 'MIT',
-  packageRepo: 'https://github.com/Start9Labs/hello-world-startos',
-  upstreamRepo: 'https://github.com/Start9Labs/hello-world',
-  marketingUrl: 'https://start9.com/',
-  donationUrl: 'https://donate.start9.com/',
+  id: 'wordpress',
+  title: 'WordPress',
+  license: 'GPL-2.0-or-later',
+  packageRepo: 'https://github.com/Start9Labs/wordpress-startos',
+  upstreamRepo: 'https://github.com/WordPress/WordPress',
+  marketingUrl: 'https://wordpress.org/',
+  donationUrl: 'https://wordpressfoundation.org/donate/',
+  docsUrls: ['https://wordpress.org/documentation/'],
   description: { short, long },
-  volumes: ['main'],
+  volumes: ['main', 'mysql'],
   images: {
-    'hello-world': {
-      source: { dockerTag: 'ghcr.io/start9labs/hello-world:2.0.0' },
-      arch: ['x86_64', 'aarch64', 'riscv64'],
+    wordpress: {
+      source: {
+        dockerBuild: {},
+      },
+      arch: ['x86_64', 'aarch64'],
+    },
+    mariadb: {
+      source: {
+        dockerTag: 'mariadb:11.8.7',
+      },
+      arch: ['x86_64', 'aarch64'],
     },
   },
   alerts: {
