@@ -18,7 +18,7 @@ You can add as many sites as you want at once. Each row becomes its own independ
 
 Each site has an auto-generated admin user, but the password is only revealed when you ask for one. The package never displays a stale password — every time you run **Reset Admin Password**, it picks a new random password, pushes it into WordPress, and shows it to you.
 
-When you create a new site, a task appears prompting you to **Set the admin password for `<site name>`**. Clicking it opens the **Reset Admin Password** action. Select the named site before submitting. After you reset that site's password once, its prompt will not return on restart. With multiple sites, resetting one can also dismiss the other reminders; you can still choose each remaining site through the action.
+When you create a new site, a task appears prompting you to **Set the admin password for `<site name>`**. Clicking it opens the **Reset Admin Password** action with that site selected. After you reset that site's password once, its prompt will not return on restart. Other sites' reminders stay visible until you reset their passwords too.
 
 To sign in afterwards:
 

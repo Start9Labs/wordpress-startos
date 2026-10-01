@@ -68,7 +68,7 @@ The dynamic `WP_HOME` / `WP_SITEURL` in `wp-config.php` mean the site is reachab
 
 The package creates **one MultiHost and two Interfaces per site** — one for the public site (`/`) and one for the WordPress admin dashboard (`/wp-admin/`). They share hostnames (managed through the StartOS UI on the MultiHost) and the same internal port; the only difference is the path opened when the user clicks the interface. Interface IDs are `<site-id>-site` and `<site-id>-admin`.
 
-Internally each site listens on its own port (`8000`, `8001`, …) — StartOS routes external hostnames to that port.
+Internally each site listens on its own port (`8000`, `8001`, …) — StartOS routes external hostnames to that port. Set Primary URL reads the public interface's non-local addresses from `sdk.host.getOwn` using the site's host ID and port binding.
 
 | Source              | Internal port | External                                  |
 | ------------------- | ------------- | ----------------------------------------- |
@@ -97,7 +97,7 @@ The first-site prompt is critical and blocks startup when the registry is empty.
 
 Each site with `adminPasswordRevealed: false` gets an important, non-blocking Reset Admin Password prompt. A successful reset persists `true` before clearing its replay key; failed resets leave it unset. Removing a site clears its replay key too.
 
-Task `input` and `when` are omitted to avoid init deadlocks on older StartOS hosts. The action therefore opens with its ordinary site selector, not a per-task prefill. StartOS clears all unconditional tasks targeting an action when that action completes: resetting one site's password can also dismiss other sites' prompts until the next init. Their flags remain unset and the reset action remains available.
+Each task prefills its own site. Its `input-not-matches` condition has an empty `accept` list: selecting a site is not proof that its password was reset. The reset handler explicitly clears only the selected site's replay key after wp-cli succeeds and the flag is persisted. Other sites' reminders remain active. The package uses the current SDK's host ABI rather than the older-host task workaround.
 
 ## Backups and Restore
 
@@ -196,7 +196,7 @@ The package applies a baseline of WordPress-specific hardening out of the box. N
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for build instructions and development workflow.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for build instructions and development workflow. The Makefile and TypeScript config consume the SDK's canonical build/lint configuration; CI delegates to the reusable workflows in `Start9Labs/start-technologies`.
 
 ## Quick Reference for AI Consumers
 

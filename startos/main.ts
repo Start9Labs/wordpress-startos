@@ -22,7 +22,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
   }
   const { dbRootPassword, sites } = store
 
-  const mariadbSub = await sdk.SubContainer.of(
+  const mariadbSub = sdk.SubContainer.of(
     effects,
     { imageId: 'mariadb' },
     sdk.Mounts.of().mountVolume({
@@ -41,39 +41,40 @@ export const main = sdk.setupMain(async ({ effects }) => {
     readonly: false,
   })
 
-  const setupSub = await sdk.SubContainer.of(
+  const setupSub = sdk.SubContainer.of(
     effects,
     { imageId: 'wordpress' },
     wpMounts,
     'setup-sub',
   )
-  const phpFpmSub = await sdk.SubContainer.of(
+  const phpFpmSub = sdk.SubContainer.of(
     effects,
     { imageId: 'wordpress' },
     wpMounts,
     'php-fpm-sub',
   )
-  const nginxSub = await sdk.SubContainer.of(
+  const nginxSub = sdk.SubContainer.of(
     effects,
     { imageId: 'wordpress' },
     wpMounts,
     'nginx-sub',
   )
-  const wpCronSub = await sdk.SubContainer.of(
+  const wpCronSub = sdk.SubContainer.of(
     effects,
     { imageId: 'wordpress' },
     wpMounts,
     'wp-cron-sub',
   )
 
-  await mkdir(`${nginxSub.rootfs}/etc/nginx/http.d`, { recursive: true })
+  const nginxRootfs = await nginxSub.rootfs
+  await mkdir(`${nginxRootfs}/etc/nginx/http.d`, { recursive: true })
   await writeFile(
-    `${nginxSub.rootfs}/etc/nginx/http.d/sites.conf`,
+    `${nginxRootfs}/etc/nginx/http.d/sites.conf`,
     renderNginxSites(sites),
   )
 
   await writeFile(
-    `${wpCronSub.rootfs}/etc/wp-cron-sites`,
+    `${await wpCronSub.rootfs}/etc/wp-cron-sites`,
     sites.map(({ id }) => sitePathFor(id)).join('\n') + '\n',
   )
 

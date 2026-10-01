@@ -17,12 +17,11 @@ export const inputSpec = InputSpec.of({
     let defaultKey = ''
 
     for (const site of sites) {
-      const urls = await sdk.serviceInterface
-        .getOwn(
-          effects,
-          `${site.id}-site`,
-          (i) => i?.addressInfo?.nonLocal.format() || [],
-        )
+      const urls = await sdk.host
+        .getOwn(effects, site.id, (host) => {
+          const iface = host?.bindings[site.port]?.interfaces[`${site.id}-site`]
+          return iface?.addressInfo.nonLocal.format() || []
+        })
         .const()
 
       for (const url of urls) {

@@ -22,6 +22,7 @@ Regression checks:
 
 ```bash
 npm run check
+node node_modules/@start9labs/start-sdk/lint.mjs
 npx prettier --check startos
 npm test
 npm run test:runtime   # Docker required; fresh sites, upgrades, retries, cron
@@ -36,7 +37,7 @@ For a complete list of build options, see [Makefile](https://docs.start9.com/pac
 
 ## CI/CD
 
-Three workflows under `.github/workflows/` wrap reusable workflows in [`start9labs/shared-workflows`](https://github.com/Start9Labs/shared-workflows):
+The Makefile includes `node_modules/@start9labs/start-sdk/s9pk.mk` and `tsconfig.json` extends the SDK's `tsconfig.base.json`. Three workflows under `.github/workflows/` wrap reusable workflows in [`Start9Labs/start-technologies`](https://github.com/Start9Labs/start-technologies/tree/master/.github/workflows):
 
 - **`build.yml`** — on PR, builds the `.s9pk` and uploads per-arch artifacts for sideload testing.
 - **`release.yml`** — on `v*` tag, builds per arch and publishes to the test registry.

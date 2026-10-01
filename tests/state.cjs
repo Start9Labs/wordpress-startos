@@ -58,7 +58,7 @@ storeJson.read = (map) => ({
 storeJson.merge = async (_, patch) => {
   store = { ...store, ...patch }
 }
-sdk.SubContainer.of = async () => ({ rootfs })
+sdk.SubContainer.of = () => ({ rootfs: Promise.resolve(rootfs) })
 sdk.SubContainer.withTemp = async (_, image, mounts, name, fn) => {
   await fn({
     execFail: async (command) => {
@@ -132,6 +132,15 @@ async function run() {
   await taskSetAdminPassword.init({})
   assert.equal(created.length, 1)
   assert.equal(created[0].severity, 'important')
+  assert.deepEqual(created[0].when, {
+    condition: 'input-not-matches',
+    once: false,
+  })
+  assert.deepEqual(created[0].input, {
+    kind: 'partial',
+    accept: [],
+    set: { siteId: site.id },
+  })
   const taskId = created[0].replayId
   await resetAdminPassword.handler({ effects: {}, input: { siteId: site.id } })
   assert.equal(commands.length, 1)
@@ -166,6 +175,57 @@ async function run() {
     [taskId],
     'removing a site clears its outstanding task',
   )
+  const other = { ...site, id: 'other', name: 'Other', port: 8001 }
+  store = { ...store, sites: [site, other] }
+  created = []
+  await taskSetAdminPassword.init({})
+  assert.deepEqual(
+    created.map((task) => task.input.set),
+    [{ siteId: site.id }, { siteId: other.id }],
+  )
+  assert.ok(
+    created.every(
+      (task) => task.input.accept.length === 0 && task.when.once === false,
+    ),
+  )
+
+  const selectors = []
+  sdk.InputSpec.of = (fields) => fields
+  sdk.Value.dynamicSelect = (fn) => fn
+  sdk.host.getOwn = (effects, hostId, map) => ({
+    const: async () => {
+      selectors.push(hostId)
+      if (hostId === other.id) return map(null)
+      return map({
+        bindings: {
+          [site.port]: {
+            interfaces: {
+              [`${site.id}-site`]: {
+                addressInfo: {
+                  nonLocal: { format: () => ['https://example.test'] },
+                },
+              },
+              [`${site.id}-admin`]: {
+                addressInfo: {
+                  nonLocal: {
+                    format: () => ['https://example.test/wp-admin/'],
+                  },
+                },
+              },
+            },
+          },
+        },
+      })
+    },
+  })
+  store.sites[0] = { ...site, primaryUrl: 'https://example.test' }
+  const { inputSpec } = require('../startos/actions/setPrimaryUrl.ts')
+  const selection = await inputSpec.selection({ effects: {} })
+  assert.deepEqual(selectors, [site.id, other.id])
+  assert.deepEqual(selection.values, {
+    'testsite|https://example.test': 'Test — https://example.test',
+  })
+  assert.equal(selection.default, 'testsite|https://example.test')
   console.log('State regressions passed')
 }
 run()
