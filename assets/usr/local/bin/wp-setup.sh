@@ -4,9 +4,10 @@
 #   create the database, lay down WP files, generate wp-config.php, and run
 #   wp core install.
 #
-# Idempotent: completed sites are left alone. Designed to be run as a oneshot
-# at every setupMain re-evaluation. Imports of existing sites go through
-# WordPress plugins (BackupBuddy, Duplicator, All-in-One WP Migration, etc.)
+# Installed sites receive newer bundled core and refreshed bundled mu-plugins.
+# Designed to be run as a oneshot at every setupMain re-evaluation.
+# Imports of existing sites go through WordPress plugins
+# (BackupBuddy, Duplicator, All-in-One WP Migration, etc.)
 # — install on a fresh site, restore via the plugin.
 set -euo pipefail
 
@@ -35,7 +36,7 @@ wait_for_db() {
 }
 
 gen_secret() {
-  tr -dc 'a-zA-Z0-9!@#$%^&*()-_=+' </dev/urandom | head -c 64
+  tr -dc 'a-zA-Z0-9!@#$%^&*()_=+-' </dev/urandom | head -c 64
 }
 
 shell_escape() {
@@ -153,6 +154,44 @@ install_fresh() {
     --skip-email
 }
 
+core_version() {
+  php -r 'include $argv[1] . "/wp-includes/version.php"; echo $wp_version;' "$1"
+}
+
+upgrade_core() {
+  local site_dir="$1"
+  local name="$2"
+  local have want
+  local pending="$site_dir/.core-upgrade-pending"
+  if [ -f "$pending" ]; then
+    have=$(core_version "$site_dir" 2>/dev/null) || have=''
+  else
+    have=$(core_version "$site_dir")
+  fi
+  want=$(core_version "$CORE_SRC")
+  if php -r 'exit(version_compare($argv[1], $argv[2], ">") ? 0 : 1);' "$have" "$want"; then
+    return 0
+  fi
+  if [ "$have" = "$want" ] && [ ! -f "$pending" ]; then
+    return 0
+  fi
+  echo "Upgrading WordPress core for '$name' from $have to $want…"
+  # Retry interrupted copies and schema updates even after version.php changes.
+  touch "$pending"
+  tar -C "$CORE_SRC" --exclude=./wp-content -cf - . | tar -C "$site_dir" -xf -
+  chown -R www-data:www-data "$site_dir"
+  wp --path="$site_dir" --allow-root core update-db
+  rm -f "$pending"
+}
+
+sync_bundled_plugins() {
+  local site_dir="$1"
+  local plugins="$site_dir/wp-content/mu-plugins"
+  mkdir -p "$plugins"
+  cp -a "$CORE_SRC"/wp-content/mu-plugins/. "$plugins/"
+  chown -R www-data:www-data "$plugins"
+}
+
 sync_primary_url() {
   local site_dir="$1"
   local primary="$2"
@@ -187,6 +226,9 @@ jq -c '.sites[]?' "$STORE_PATH" | while read -r site; do
     touch "$site_dir/.installed"
     echo "Site '$name' ready."
   fi
+
+  sync_bundled_plugins "$site_dir"
+  upgrade_core "$site_dir" "$name"
 
   # Always reconcile .primary-url from store.json — runs whenever the
   # user updates the primary via the Set Primary URL action.

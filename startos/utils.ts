@@ -17,19 +17,32 @@ export function newSiteId(): string {
 }
 
 export function newPassword(): string {
-  return sdkUtils.getDefaultString({ charset: PASSWORD_CHARSET, len: PASSWORD_LEN })
+  return sdkUtils.getDefaultString({
+    charset: PASSWORD_CHARSET,
+    len: PASSWORD_LEN,
+  })
 }
 
 export function newSecret(): string {
-  return sdkUtils.getDefaultString({ charset: PASSWORD_CHARSET, len: SECRET_LEN })
+  return sdkUtils.getDefaultString({
+    charset: PASSWORD_CHARSET,
+    len: SECRET_LEN,
+  })
 }
 
 export function newAdminUser(): string {
-  return 'a' + sdkUtils.getDefaultString({ charset: 'a-z,0-9', len: ADMIN_USER_LEN - 1 })
+  return (
+    'a' +
+    sdkUtils.getDefaultString({ charset: 'a-z,0-9', len: ADMIN_USER_LEN - 1 })
+  )
 }
 
 export function dbNameFor(siteId: string): string {
   return `wp_${siteId}`
+}
+
+export function adminPasswordTaskId(siteId: string): string {
+  return `set-admin-password-${siteId}`
 }
 
 export function sitePathFor(siteId: string): string {

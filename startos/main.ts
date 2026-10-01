@@ -2,22 +2,25 @@ import { writeFile, mkdir } from 'fs/promises'
 import { storeJson, Site } from './fileModels/store.json'
 import { sdk } from './sdk'
 import { i18n } from './i18n'
-import {
-  MARIADB_DATADIR,
-  PHP_FPM_PORT,
-  SITES_ROOT,
-  sitePathFor,
-} from './utils'
+import { MARIADB_DATADIR, PHP_FPM_PORT, SITES_ROOT, sitePathFor } from './utils'
 
 export const main = sdk.setupMain(async ({ effects }) => {
   console.info('Starting WordPress…')
 
-  const store = await storeJson.read().const(effects)
+  const store = await storeJson
+    .read((s) => ({
+      dbRootPassword: s.dbRootPassword,
+      sites: s.sites.map(({ id, port, primaryUrl }) => ({
+        id,
+        port,
+        primaryUrl,
+      })),
+    }))
+    .const(effects)
   if (!store?.dbRootPassword) {
     throw new Error('Database root password missing from store.json')
   }
-  const { dbRootPassword } = store
-  const sites: Site[] = store.sites || []
+  const { dbRootPassword, sites } = store
 
   const mariadbSub = await sdk.SubContainer.of(
     effects,
@@ -67,6 +70,11 @@ export const main = sdk.setupMain(async ({ effects }) => {
   await writeFile(
     `${nginxSub.rootfs}/etc/nginx/http.d/sites.conf`,
     renderNginxSites(sites),
+  )
+
+  await writeFile(
+    `${wpCronSub.rootfs}/etc/wp-cron-sites`,
+    sites.map(({ id }) => sitePathFor(id)).join('\n') + '\n',
   )
 
   const daemons = sdk.Daemons.of(effects)
@@ -159,8 +167,10 @@ export const main = sdk.setupMain(async ({ effects }) => {
       subcontainer: wpCronSub,
       exec: {
         command: ['/usr/local/bin/wp-cron-loop.sh'],
+        user: 'www-data',
         env: {
-          SITES_ROOT: SITES_ROOT,
+          WP_CLI_CACHE_DIR: '/tmp/wp-cli-cache',
+          WP_CRON_SITES: '/etc/wp-cron-sites',
           WP_CRON_INTERVAL: '300',
         },
       },
@@ -177,7 +187,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
   return daemons
 })
 
-function renderNginxSites(sites: Site[]): string {
+function renderNginxSites(sites: Pick<Site, 'id' | 'port'>[]): string {
   const blackhole = `server {
   listen 80 default_server;
   listen [::]:80 default_server;

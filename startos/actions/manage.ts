@@ -2,7 +2,13 @@ import { z } from '@start9labs/start-sdk'
 import { storeJson, Site } from '../fileModels/store.json'
 import { sdk } from '../sdk'
 import { i18n } from '../i18n'
-import { newAdminUser, newPassword, newSiteId, nextSitePort } from '../utils'
+import {
+  adminPasswordTaskId,
+  newAdminUser,
+  newPassword,
+  newSiteId,
+  nextSitePort,
+} from '../utils'
 
 const { InputSpec, Value, List } = sdk
 
@@ -49,7 +55,7 @@ export const manage = sdk.Action.withInput(
       'Add new WordPress sites, rename existing ones, or remove ones you no longer need. Each row is an independent WordPress install with its own database and hostname.',
     ),
     warning: i18n(
-      'Removing a site discards its database and all uploaded files. This cannot be undone.',
+      'Removing a site removes its interfaces. Its files and database stay on disk.',
     ),
     allowedStatuses: 'any',
     group: null,
@@ -93,9 +99,17 @@ export const manage = sdk.Action.withInput(
         adminPassword: newPassword(),
         adminEmail: `admin@${id}.local`,
         primaryUrl: null,
+        adminPasswordRevealed: false,
       }
     })
 
     await storeJson.merge(effects, { sites })
+
+    const keptIds = new Set(sites.map((site) => site.id))
+    for (const site of existing) {
+      if (!keptIds.has(site.id)) {
+        await sdk.action.clearTask(effects, adminPasswordTaskId(site.id))
+      }
+    }
   },
 )

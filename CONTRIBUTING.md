@@ -4,9 +4,8 @@
 
 - **[`README.md`](./README.md)** — what this package is and how it's built (image, volumes, interfaces). Technical reference for developers and AI assistants.
 - **[`instructions.md`](./instructions.md)** — the user-facing instructions packed into the `.s9pk` and shown on the **Instructions** tab in StartOS, for the person running the service.
-- **[`TODO.md`](./TODO.md)** — pending work on this package.
 
-**Read all three before starting any work.** Any code change that affects user-visible behavior must update `README.md` and `instructions.md` in the same change; add to `TODO.md` when you defer work, and remove items when complete. Content rules: [Writing READMEs](https://docs.start9.com/packaging/writing-readmes.html), [Writing Instructions](https://docs.start9.com/packaging/writing-instructions.html).
+**Read both before starting any work.** Any code change that affects user-visible behavior must update `README.md` and `instructions.md` in the same change. Content rules: [Writing READMEs](https://docs.start9.com/packaging/writing-readmes.html), [Writing Instructions](https://docs.start9.com/packaging/writing-instructions.html).
 
 ## Environment setup
 
@@ -16,7 +15,16 @@ See [Environment Setup](https://docs.start9.com/packaging/environment-setup.html
 
 ```bash
 npm ci    # install dependencies
-make      # build the universal .s9pk
+make      # build both architecture-specific .s9pks
+```
+
+Regression checks:
+
+```bash
+npm run check
+npx prettier --check startos
+npm test
+npm run test:runtime   # Docker required; fresh sites, upgrades, retries, cron
 ```
 
 For a complete list of build options, see [Makefile](https://docs.start9.com/packaging/makefile.html).
@@ -24,7 +32,7 @@ For a complete list of build options, see [Makefile](https://docs.start9.com/pac
 ## Updating the upstream version
 
 1. Apply the upstream bump per [UPDATING.md](./UPDATING.md).
-2. Update `version` and `releaseNotes` in the file under `startos/versions/`, renaming it to the new version string. A _new_ version file is only needed when the bump requires a migration, or when you want the old release notes preserved in git history — see [Versions](https://docs.start9.com/packaging/versions.html).
+2. Update `version` and `releaseNotes` in `startos/versions/current.ts` in place. Spin off a historical file only when the outgoing version has a non-empty migration — see [Versions](https://docs.start9.com/packaging/versions.html).
 
 ## CI/CD
 

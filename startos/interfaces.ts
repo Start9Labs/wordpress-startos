@@ -30,7 +30,7 @@ export const setInterfaces = sdk.setupInterfaces(async ({ effects }) => {
         name: i18n('${name} (admin)', { name }),
         id: `${id}-admin`,
         description: i18n(
-          'WordPress admin dashboard for ${name}. Run Show Admin Credentials to look up the login.',
+          'WordPress admin dashboard for ${name}. Run Reset Admin Password to get the login.',
           { name },
         ),
         type: 'ui',

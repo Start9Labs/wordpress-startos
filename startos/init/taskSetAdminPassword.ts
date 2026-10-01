@@ -2,6 +2,7 @@ import { resetAdminPassword } from '../actions/resetAdminPassword'
 import { storeJson } from '../fileModels/store.json'
 import { sdk } from '../sdk'
 import { i18n } from '../i18n'
+import { adminPasswordTaskId } from '../utils'
 
 // `input` + `when: 'input-not-matches'` would auto-clear the task; both
 // deadlock init on start-os <= 0.4.0-beta.9 (fixed in start-os#3273).
@@ -9,10 +10,10 @@ import { i18n } from '../i18n'
 export const taskSetAdminPassword = sdk.setupOnInit(async (effects) => {
   const sites = (await storeJson.read((s) => s.sites).const(effects)) || []
 
-  for (const site of sites) {
+  for (const site of sites.filter((s) => !s.adminPasswordRevealed)) {
     await sdk.action.createOwnTask(effects, resetAdminPassword, 'important', {
       reason: i18n('Set the admin password for ${name}', { name: site.name }),
-      replayId: `set-admin-password-${site.id}`,
+      replayId: adminPasswordTaskId(site.id),
     })
   }
 })

@@ -1,7 +1,7 @@
 import { storeJson } from '../fileModels/store.json'
 import { sdk } from '../sdk'
 import { i18n } from '../i18n'
-import { newPassword } from '../utils'
+import { adminPasswordTaskId, newPassword } from '../utils'
 
 const { InputSpec, Value } = sdk
 
@@ -73,13 +73,15 @@ export const resetAdminPassword = sdk.Action.withInput(
     )
 
     const updated = sites.map((s) =>
-      s.id === site.id ? { ...s, adminPassword: password } : s,
+      s.id === site.id
+        ? { ...s, adminPassword: password, adminPasswordRevealed: true }
+        : s,
     )
     await storeJson.merge(effects, { sites: updated })
 
     // Dismiss the per-site task — see taskSetAdminPassword.ts.
     await sdk.action
-      .clearTask(effects, `set-admin-password-${site.id}`)
+      .clearTask(effects, adminPasswordTaskId(site.id))
       .catch(() => {})
 
     return {

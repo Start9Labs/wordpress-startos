@@ -6,7 +6,7 @@
 
 > **Upstream repo:** <https://github.com/WordPress/WordPress>
 
-Host any number of independent WordPress sites side by side on StartOS. Each site gets its own MariaDB database, its own set of hostnames managed by StartOS, and its own auto-generated admin account. Sites can be created from scratch through the **Manage Sites** action, or imported from a WordPress backup via **File Browser**.
+Host any number of independent WordPress sites side by side on StartOS. Each site gets its own MariaDB database, its own set of hostnames managed by StartOS, and its own auto-generated admin account. Sites are created through the **Manage Sites** action; existing sites are migrated in with a WordPress migration plugin.
 
 ## Table of Contents
 
@@ -16,6 +16,7 @@ Host any number of independent WordPress sites side by side on StartOS. Each sit
 - [Per-Site Lifecycle](#per-site-lifecycle)
 - [Network Access and Interfaces](#network-access-and-interfaces)
 - [Actions (StartOS UI)](#actions-startos-ui)
+- [Tasks](#tasks)
 - [Backups and Restore](#backups-and-restore)
 - [Health Checks](#health-checks)
 - [Dependencies](#dependencies)
@@ -40,8 +41,6 @@ Host any number of independent WordPress sites side by side on StartOS. Each sit
 | `main`  | `/data`          | One subdirectory per site at `/data/sites/<site-id>/` containing WordPress files; `/data/store.json` holds the sites registry. |
 | `mysql` | `/var/lib/mysql` | MariaDB data directory.                                  |
 
-Optional read-only mount: `filebrowser:data` at `/mnt/filebrowser/` when a site has a pending import.
-
 ## Installation and First-Run Flow
 
 1. Install the package. A random MariaDB root password is generated and stored in `store.json`.
@@ -61,10 +60,7 @@ Each site is independent. Data layout:
   .installed                      idempotency marker
 ```
 
-A site goes through one of two installation paths:
-
-- **Fresh** — `wp core install` lays down a new install with the auto-generated admin credentials.
-- **Import** — the **Import Site** action queues a pending import; the next `setup-sites` run extracts the archive (`.tar.gz` / `.tar` / `.zip`) from File Browser, imports the bundled `.sql` dump, regenerates `wp-config.php` (so URLs become dynamic), and runs `wp core update-db`.
+On a site's first `setup-sites` run, `wp core install` lays down a new install with the auto-generated admin credentials. On later runs, if the image's WordPress core is newer than the site's, `setup-sites` copies the new core over the site, preserving `wp-config.php` and `wp-content/`, and runs `wp core update-db`. A `.core-upgrade-pending` marker makes interrupted copies or schema updates retry on the next start. It never downgrades a site that was updated from the WordPress admin. Bundled mu-plugins are refreshed on every setup, including wrapper-only updates; user-installed plugins, themes, and uploads are retained.
 
 The dynamic `WP_HOME` / `WP_SITEURL` in `wp-config.php` mean the site is reachable on every hostname the user adds to the MultiHost — no per-site URL configuration step is needed.
 
@@ -89,9 +85,19 @@ Internally each site listens on its own port (`8000`, `8001`, …) — StartOS r
 | ----------------------------- | ---------------------------------------------------------------------------------------- |
 | **Manage Sites**              | List editor: add new sites by adding rows, rename in place, remove by deleting rows.     |
 | **Set Primary URL**           | For each site, choose the URL WordPress should use when it has no incoming request to derive one from (wp-cron, email notifications, scheduled posts, sitemap entries). |
-| **Reset Admin Password**      | Generate a new random password for a chosen site's admin account, push it into WordPress via wp-cli, and reveal it. Used for initial sign-in (auto-prompted via a critical task when a site is created) and for recovery if the password is ever lost. |
+| **Reset Admin Password**      | Generate a new random password for a chosen site's admin account, push it into WordPress via wp-cli, and reveal it. Used for initial sign-in (prompted by an important task until it has been run once for the site) and for recovery if the password is ever lost. |
+
+Renaming a site or resetting its admin password does not restart the sites. Adding/removing sites or changing a primary URL restarts the shared daemon chain. Removing a site also clears its password prompt and removes it from the cron registry; its files and database remain on disk.
 
 Migrations from existing WordPress installs go through WordPress's own plugin ecosystem (All-in-One WP Migration, Duplicator, BackupBuddy, UpdraftPlus, etc.) — create a fresh site here, install the migration plugin inside WordPress, and use its restore flow.
+
+## Tasks
+
+The first-site prompt is critical and blocks startup when the registry is empty. Running Manage Sites clears it; it returns if all sites are removed.
+
+Each site with `adminPasswordRevealed: false` gets an important, non-blocking Reset Admin Password prompt. A successful reset persists `true` before clearing its replay key; failed resets leave it unset. Removing a site clears its replay key too.
+
+Task `input` and `when` are omitted to avoid init deadlocks on older StartOS hosts. The action therefore opens with its ordinary site selector, not a per-task prefill. StartOS clears all unconditional tasks targeting an action when that action completes: resetting one site's password can also dismiss other sites' prompts until the next init. Their flags remain unset and the reset action remains available.
 
 ## Backups and Restore
 
@@ -109,11 +115,11 @@ Restored as raw volume snapshots. The package should be stopped during backup fo
 | `mariadb`      | `mariadb -e 'SELECT 1'` against the loopback DB.    |
 | `php-fpm`      | Port `9000` listening.                              |
 | `nginx`        | First site's port listening, or success-with-message when no sites exist. |
-| `wp-cron`      | Daemon is up. (Loops every 5 minutes calling `wp cron event run --due-now` for each installed site.) |
+| `wp-cron`      | Daemon is up. (Runs as `www-data`, calling `wp cron event run --due-now` every 5 minutes for each active installed site listed in `/etc/wp-cron-sites`.) |
 
 ### Why an internal cron daemon
 
-`wp-config.php` sets `DISABLE_WP_CRON = true`. WordPress's default behavior fires `wp-cron.php` via a non-blocking loopback HTTP `POST` to `https://<HTTP_HOST>/wp-cron.php` on every page load. When `<HTTP_HOST>` is a clearnet hostname that the container can't resolve back to itself (DNS hasn't propagated yet, the cert is still being issued, the public IP loops through the edge proxy slowly), the loopback request blocks the originating page-load response and the site appears to time out. The sidecar daemon runs `wp-cli cron event run --due-now` against each `/data/sites/<id>/` every 5 minutes; this is the same pattern WordPress production hosts use.
+`wp-config.php` sets `DISABLE_WP_CRON = true`. WordPress's default behavior fires `wp-cron.php` via a non-blocking loopback HTTP `POST` to `https://<HTTP_HOST>/wp-cron.php` on every page load. When `<HTTP_HOST>` is a clearnet hostname that the container can't resolve back to itself (DNS hasn't propagated yet, the cert is still being issued, the public IP loops through the edge proxy slowly), the loopback request blocks the originating page-load response and the site appears to time out. The sidecar daemon runs `wp-cli cron event run --due-now` as `www-data` against each active `/data/sites/<id>/` every 5 minutes; `WP_CLI_CACHE_DIR` points to writable `/tmp/wp-cli-cache`. Removed sites are excluded even though their directories remain. This prevents cron-created uploads and plugin updates from becoming root-owned; this is the same pattern WordPress production hosts use.
 
 ### URL resolution
 
@@ -167,12 +173,12 @@ The package applies a baseline of WordPress-specific hardening out of the box. N
 **Database:**
 
 - MariaDB binds `127.0.0.1` only; never network-exposed
-- Each site lives in its own database schema (`wp_<site-id>`); no cross-site SQL access
+- Each site lives in its own database schema (`wp_<site-id>`), but shared root credentials do not enforce cross-site SQL isolation
 
 **Application:**
 
 - Admin username is a 16-char random string (generated when the site row is created) — defeats the `admin` username assumption used by brute-force scripts
-- Admin password is a 32-char random string; revealed only via the **Show Admin Credentials** action
+- Admin password is a 32-char random string; revealed only via the **Reset Admin Password** action
 
 **Known limitations:**
 
@@ -182,7 +188,7 @@ The package applies a baseline of WordPress-specific hardening out of the box. N
 
 ## Limitations
 
-- WordPress core version is pinned per package release. To upgrade WP, bump the package.
+- WordPress core version is pinned per package release and applied to every installed site on update. `WP_AUTO_UPDATE_CORE` is off; a manual update from the WordPress admin is not reverted.
 - Plugins and themes are managed entirely through the WP admin UI — there is no StartOS action surface for them.
 - Removing a site through Manage Sites currently leaves the site directory and its DB schema behind. A cleanup pass is on the roadmap.
 - SMTP is not yet wired in. Outbound mail (password resets, member signup, etc.) will not work until that's added.
@@ -213,9 +219,12 @@ interfaces_per_site:
 dependencies: none
 actions:
   - manage
-  - show-admin-credentials
+  - set-primary-url
+  - reset-admin-password
 state:
-  store_json_keys: [dbRootPassword, sites[id, port, name, adminUser, adminPassword, adminEmail]]
-  filesystem_markers: /data/sites/<id>/.installed
+  store_json_keys: [dbRootPassword, sites[id, port, name, adminUser, adminPassword, adminEmail, primaryUrl, adminPasswordRevealed]]
+  filesystem_markers:
+    - /data/sites/<id>/.installed
+    - /data/sites/<id>/.core-upgrade-pending
 migrations: via WordPress plugins inside a fresh site (no StartOS-side import action)
 ```

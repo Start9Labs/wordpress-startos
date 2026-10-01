@@ -1,9 +1,11 @@
 export const short = {
   en_US: 'Host multiple WordPress sites, each with its own database',
-  es_ES: 'Aloja varios sitios de WordPress, cada uno con su propia base de datos',
+  es_ES:
+    'Aloja varios sitios de WordPress, cada uno con su propia base de datos',
   de_DE: 'Hosten Sie mehrere WordPress-Sites, jede mit eigener Datenbank',
   pl_PL: 'Hostuj wiele witryn WordPress, każda z własną bazą danych',
-  fr_FR: 'Hébergez plusieurs sites WordPress, chacun avec sa propre base de données',
+  fr_FR:
+    'Hébergez plusieurs sites WordPress, chacun avec sa propre base de données',
 }
 
 export const long = {
@@ -16,5 +18,5 @@ export const long = {
   pl_PL:
     'WordPress to najpopularniejszy system zarządzania treścią w sieci, obsługujący blogi, strony marketingowe i sklepy internetowe. Ten pakiet umożliwia uruchamianie dowolnej liczby niezależnych witryn WordPress obok siebie — każda otrzymuje własną bazę danych, własną nazwę hosta i własne konto administratora. Witryny można tworzyć od nowa lub importować z istniejącej kopii zapasowej WordPress.',
   fr_FR:
-    'WordPress est le système de gestion de contenu le plus populaire du web, alimentant blogs, sites de marketing et boutiques en ligne. Ce paquet vous permet d\'exécuter un nombre quelconque de sites WordPress indépendants côte à côte — chacun obtient sa propre base de données, son propre nom d\'hôte et son propre compte administrateur. Les sites peuvent être créés à partir de zéro ou importés depuis une sauvegarde WordPress existante.',
+    "WordPress est le système de gestion de contenu le plus populaire du web, alimentant blogs, sites de marketing et boutiques en ligne. Ce paquet vous permet d'exécuter un nombre quelconque de sites WordPress indépendants côte à côte — chacun obtient sa propre base de données, son propre nom d'hôte et son propre compte administrateur. Les sites peuvent être créés à partir de zéro ou importés depuis une sauvegarde WordPress existante.",
 }
