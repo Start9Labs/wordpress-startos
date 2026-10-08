@@ -14,7 +14,7 @@ export const inputSpec = InputSpec.of({
   selection: Value.dynamicSelect(async ({ effects }) => {
     const sites = (await storeJson.read((s) => s.sites).const(effects)) || []
     const values: Record<string, string> = {}
-    let defaultKey = ''
+    let defaultKey: string | null = null
 
     for (const site of sites) {
       const urls = await sdk.host
@@ -69,7 +69,7 @@ export const setPrimaryUrl = sdk.Action.withInput(
     if (current && current.primaryUrl) {
       return { selection: `${current.id}${SEP}${current.primaryUrl}` }
     }
-    return { selection: '' }
+    return null
   },
 
   async ({ effects, input }) => {

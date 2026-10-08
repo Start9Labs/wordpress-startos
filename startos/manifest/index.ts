@@ -9,7 +9,6 @@ export const manifest = setupManifest({
   upstreamRepo: 'https://github.com/WordPress/WordPress',
   marketingUrl: 'https://wordpress.org/',
   donationUrl: 'https://wordpressfoundation.org/donate/',
-  docsUrls: ['https://wordpress.org/documentation/'],
   description: { short, long },
   volumes: ['main', 'mysql'],
   images: {
@@ -26,5 +25,4 @@ export const manifest = setupManifest({
       arch: ['x86_64', 'aarch64'],
     },
   },
-  dependencies: {},
 })
