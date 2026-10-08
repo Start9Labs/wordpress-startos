@@ -1,7 +1,7 @@
 import { FileHelper, z } from '@start9labs/start-sdk'
 import { sdk } from '../sdk'
 
-const siteShape = z.object({
+const siteShape = z.looseObject({
   id: z.string(),
   port: z.number().int().nonnegative(),
   name: z.string(),
@@ -12,7 +12,7 @@ const siteShape = z.object({
   adminPasswordRevealed: z.boolean().default(false),
 })
 
-const shape = z.object({
+const shape = z.looseObject({
   dbRootPassword: z.string().optional(),
   sites: z.array(siteShape).default([]),
 })

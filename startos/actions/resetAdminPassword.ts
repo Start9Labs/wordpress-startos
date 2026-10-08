@@ -26,21 +26,19 @@ export const resetAdminPassword = sdk.Action.withInput(
     const sites = (await storeJson.read((s) => s.sites).once()) || []
     const values: Record<string, string> = {}
     for (const s of sites) values[s.id] = s.name
-    const defaultId = sites[0]?.id ?? ''
     return InputSpec.of({
       siteId: Value.select({
         name: i18n('Site'),
-        description: i18n('Which site to reset the admin password on.'),
-        default: defaultId,
+        description: i18n(
+          'The site whose admin password is replaced. Its current password stops working, including one you set inside WordPress.',
+        ),
+        default: null,
         values,
       }),
     })
   },
 
-  async ({ effects }) => {
-    const sites = (await storeJson.read((s) => s.sites).once()) || []
-    return { siteId: sites[0]?.id ?? '' }
-  },
+  async () => null,
 
   async ({ effects, input }) => {
     const sites = (await storeJson.read((s) => s.sites).once()) || []

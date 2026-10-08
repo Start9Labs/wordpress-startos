@@ -48,7 +48,7 @@ const dict = {
   // actions/resetAdminPassword.ts
   'Reset Admin Password': 42,
   'Generate a new random password for the WordPress admin account on one of your sites and reveal it. Run this for the initial sign-in on a fresh site, or any time you need to recover access — once you change the password from inside WordPress this is the only way to get back in.': 43,
-  'Which site to reset the admin password on.': 44,
+  'The site whose admin password is replaced. Its current password stops working, including one you set inside WordPress.': 44,
   'Admin Password Reset for ${name}': 45,
   'A new admin password has been set on this site. Sign in at /wp-admin with these credentials.': 46,
 
