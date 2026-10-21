@@ -158,6 +158,22 @@ core_version() {
   php -r 'include $argv[1] . "/wp-includes/version.php"; echo $wp_version;' "$1"
 }
 
+# Remove files under wp-admin/ and wp-includes/ that the bundled core no
+# longer ships, as WordPress's own updater does; otherwise code a release
+# dropped stays on disk in upgraded sites.
+prune_core() {
+  local site_dir="$1"
+  local dir f
+  for dir in wp-admin wp-includes; do
+    (cd "$site_dir/$dir" && find . -type f) | while read -r f; do
+      [ -e "$CORE_SRC/$dir/$f" ] || rm -f "$site_dir/$dir/$f"
+    done
+    (cd "$site_dir/$dir" && find . -mindepth 1 -depth -type d) | while read -r f; do
+      [ -d "$CORE_SRC/$dir/$f" ] || rmdir "$site_dir/$dir/$f" 2>/dev/null || true
+    done
+  done
+}
+
 upgrade_core() {
   local site_dir="$1"
   local name="$2"
@@ -179,6 +195,7 @@ upgrade_core() {
   # Retry interrupted copies and schema updates even after version.php changes.
   touch "$pending"
   tar -C "$CORE_SRC" --exclude=./wp-content -cf - . | tar -C "$site_dir" -xf -
+  prune_core "$site_dir"
   chown -R www-data:www-data "$site_dir"
   wp --path="$site_dir" --allow-root core update-db
   rm -f "$pending"
