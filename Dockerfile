@@ -1,7 +1,7 @@
 FROM alpine:3.24
 
-ARG WORDPRESS_VERSION=7.0
-ARG WORDPRESS_SHA256=
+ARG WORDPRESS_VERSION=7.1.3
+ARG WORDPRESS_SHA1=491a78c7676b15dffcc69130c6054b8f49228a91
 
 RUN apk add --no-cache \
       nginx \
@@ -54,6 +54,7 @@ RUN curl -fsSLo /usr/local/bin/wp \
 
 RUN curl -fsSLo /tmp/wp.tar.gz \
       "https://wordpress.org/wordpress-${WORDPRESS_VERSION}.tar.gz" && \
+    echo "${WORDPRESS_SHA1}  /tmp/wp.tar.gz" | sha1sum -c - && \
     mkdir -p /usr/local/share/wordpress-core && \
     tar -xzf /tmp/wp.tar.gz -C /usr/local/share/wordpress-core --strip-components=1 && \
     rm /tmp/wp.tar.gz
