@@ -112,12 +112,12 @@ The package raises two kinds of task, both on its own page.
 
 Four checks, one per long-running daemon.
 
-| Check id  | Display     | Probes                                | A failure means                                                                                                       |
-| --------- | ----------- | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `mariadb` | Database    | `SELECT 1` as root over `127.0.0.1`   | "Initializing database…" is normal on first start. If it persists, MariaDB is not starting; check its logs.           |
-| `php-fpm` | PHP Runtime | Port `9000` listening                 | PHP-FPM failed to start; every site returns 502. It waits on `setup-sites`, so a failing setup shows up here first.   |
-| `nginx`   | Web Server  | The **first** site's port listening   | nginx is not serving. With no sites it reports success with a reminder to add one. Other sites' ports are not probed. |
-| `wp-cron` | Scheduler   | Nothing; reports success once running | Cannot fail by itself. Scheduled events not firing points at a missing `.installed` marker or a failing site.         |
+| Check id  | Display     | Probes                                | A failure means                                                                                                     |
+| --------- | ----------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `mariadb` | Database    | `SELECT 1` as root over `127.0.0.1`   | "Initializing database…" is normal on first start. If it persists, MariaDB is not starting; check its logs.         |
+| `php-fpm` | PHP Runtime | Port `9000` listening                 | PHP-FPM failed to start; every site returns 502. It waits on `setup-sites`, so a failing setup shows up here first. |
+| `nginx`   | Web Server  | Every site's port listening           | nginx is not serving one or more sites. With no sites it reports success with a reminder to add one.                |
+| `wp-cron` | Scheduler   | Nothing; reports success once running | Cannot fail by itself. Scheduled events not firing points at a missing `.installed` marker or a failing site.       |
 
 ## Backups and Restore
 
@@ -132,7 +132,7 @@ A backup holds every site's files and every site's schema, including the files a
 3. **Sites share one database login.** Every site connects as the MariaDB root user; separate schemas are not an isolation boundary between sites.
 4. **Core is pinned by the package.** WordPress's own core auto-update is off. A package update copies the bundled core into every site whose core is older, preserving `wp-config.php` and `wp-content/`, and runs `wp core update-db`; a site updated to a newer core from the admin is not downgraded. Plugins and themes are managed only from the WordPress admin.
 5. **XML-RPC is disabled**, in nginx and in the bundled mu-plugin. Pingbacks, trackbacks and remote-publishing clients that use XML-RPC do not work.
-6. **Hardening differs from a stock install.** The theme and plugin file editor is disabled. The REST `/wp/v2/users` endpoint is removed, `?author=N` redirects to the home page, and the WordPress version is stripped from generator tags, feeds and asset URLs. PHP files under `wp-content/uploads/` and `wp-includes/` cannot be executed directly, and `readme.html`, `license.txt`, `wp-config-sample.php`, `wp-admin/install.php`, `wp-admin/maint/repair.php` and dotfiles return 403. Responses carry `nosniff`, `SAMEORIGIN`, a strict referrer policy and HSTS. PHP hides its version and errors, and session cookies are `HttpOnly` and `Secure` with strict session-ID mode.
+6. **Hardening differs from a stock install.** The theme and plugin file editor is disabled. The REST `/wp/v2/users` endpoint is removed for visitors who are not signed in, `?author=N` redirects to the home page, and the WordPress version is stripped from generator tags, feeds and asset URLs. PHP files under `wp-content/uploads/` and `wp-includes/` cannot be executed directly, and `readme.html`, `license.txt`, `wp-config-sample.php`, `wp-admin/install.php`, `wp-admin/maint/repair.php` and dotfiles return 403. Responses carry `nosniff`, `SAMEORIGIN`, a strict referrer policy and HSTS. PHP hides its version and errors, and session cookies are `HttpOnly` and `Secure` with strict session-ID mode.
 7. **Login rate limiting is global.** `/wp-login.php` is limited to 5 requests a minute (burst 20), keyed on the client address — which behind the StartOS proxy is the proxy's, so the limit is shared by every visitor rather than per client.
 8. **WP-Cron runs on a schedule, not on page loads.** Due events run every 5 minutes as `www-data`, so an event can fire up to 5 minutes late.
 9. **No WAF and no enforced 2FA.** Add a security or two-factor plugin from the WordPress admin if a site needs one.

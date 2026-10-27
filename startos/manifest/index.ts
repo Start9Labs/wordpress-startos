@@ -20,7 +20,7 @@ export const manifest = setupManifest({
     },
     mariadb: {
       source: {
-        dockerTag: 'mariadb:11.8.7',
+        dockerTag: 'mariadb:11.8.9',
       },
       arch: ['x86_64', 'aarch64'],
     },
