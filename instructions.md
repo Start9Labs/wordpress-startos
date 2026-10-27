@@ -2,19 +2,19 @@
 
 ## Documentation
 
-- [WordPress documentation](https://wordpress.org/documentation/) — the upstream editor and administration guides.
+- [WordPress documentation](https://wordpress.org/documentation/*) — the upstream editor and administration guides.
 
 ## Adding your first site
 
-1. Open the **Actions** tab and click **Manage Sites**.
-2. Click **+** to add a row and give the site a short name (e.g. "Blog", "Marketing"). The name is only used for labelling — it doesn't have to match a domain.
-3. Click **Save**. The package will provision the database, lay down WordPress, and run the installer in the background. After a few seconds a new entry appears on the **Dashboard** tab.
+1. Run the **Add your first WordPress site!** task, which opens **Manage Sites**.
+2. Click **+** to add a row and give the site a short name (e.g. "Blog", "Marketing"). The name is only a label — it doesn't have to match a domain.
+3. Click **Save**, then start the service. The new site's two interfaces appear on the **Dashboard** once it has finished setting up.
 
 You can add as many sites as you want at once. Each row becomes its own independent site.
 
 ## Logging in
 
-Each site has an auto-generated admin user, but the password is only revealed when you ask for one. The package never displays a stale password — every time you run **Reset Admin Password**, it picks a new random password, pushes it into WordPress, and shows it to you.
+Each site has an auto-generated admin user. Its password is shown only when you run **Reset Admin Password**, which sets a new random password and shows it to you.
 
 When you create a new site, a task appears prompting you to **Set the admin password for `<site name>`**. Clicking it opens the **Reset Admin Password** action with that site selected. After you reset that site's password once, its prompt will not return on restart. Other sites' reminders stay visible until you reset their passwords too.
 
@@ -52,6 +52,6 @@ In **Manage Sites**, delete the row for the site and save. Its interfaces disapp
 
 ## Limitations
 
-- **No SMTP.** Password resets, comment notifications, and membership signups that rely on outgoing mail won't work yet.
-- **Plugins and themes go through WordPress itself.** There are no StartOS actions for them — install them from the WP admin UI as you normally would.
-- **All sites move together on update.** When you update the package, sites running older WordPress core are upgraded to the bundled version. A site manually updated to a newer core is not downgraded. Your plugins, themes, and uploads are preserved; the package's bundled security plugin is refreshed.
+- **No outgoing email.** Password resets, comment notifications, and membership signups that rely on outgoing mail are not sent.
+- **XML-RPC is disabled.** Apps and plugins that connect to WordPress over XML-RPC — pingbacks, trackbacks and older remote-publishing clients — don't work.
+- **WordPress core does not update itself.** Updating the service brings each site up to the WordPress version it ships. Plugins and themes update from the WordPress admin as usual.

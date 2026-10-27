@@ -67,7 +67,8 @@ COPY assets/usr/local/bin/wp-cron-loop.sh /usr/local/bin/wp-cron-loop.sh
 # Bundled mu-plugins that get copied into every new site alongside core.
 COPY assets/usr/local/share/wordpress-core-overlay/ /usr/local/share/wordpress-core/
 
-RUN chmod +x /usr/local/bin/wp-setup.sh /usr/local/bin/wp-cron-loop.sh
+RUN chmod 755 /usr/local/bin/wp-setup.sh /usr/local/bin/wp-cron-loop.sh && \
+    chmod -R a+rX /etc/nginx /etc/php83 /usr/local/share/wordpress-core
 
 RUN mkdir -p /run/nginx /var/log/nginx /etc/nginx/http.d && \
     rm -f /etc/nginx/http.d/default.conf
