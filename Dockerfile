@@ -36,6 +36,7 @@ RUN apk add --no-cache \
       mariadb-client \
       mariadb-connector-c \
       curl \
+      ca-certificates \
       jq \
       tar \
       gzip \
@@ -43,6 +44,9 @@ RUN apk add --no-cache \
       bash \
       coreutils \
       shadow
+
+RUN sed -i '/emSign_/s/^/!/' /etc/ca-certificates.conf && \
+    update-ca-certificates
 
 RUN ln -sf /usr/bin/php83 /usr/local/bin/php && \
     addgroup -S -g 82 www-data 2>/dev/null || true && \
