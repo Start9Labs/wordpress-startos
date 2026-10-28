@@ -1,7 +1,7 @@
 FROM alpine:3.24
 
-ARG WORDPRESS_VERSION=7.0
-ARG WORDPRESS_SHA256=
+ARG WORDPRESS_VERSION=7.1.3
+ARG WORDPRESS_SHA1=491a78c7676b15dffcc69130c6054b8f49228a91
 
 RUN apk add --no-cache \
       nginx \
@@ -36,6 +36,7 @@ RUN apk add --no-cache \
       mariadb-client \
       mariadb-connector-c \
       curl \
+      ca-certificates \
       jq \
       tar \
       gzip \
@@ -44,16 +45,21 @@ RUN apk add --no-cache \
       coreutils \
       shadow
 
+RUN sed -i '/emSign_/s/^/!/' /etc/ca-certificates.conf && \
+    update-ca-certificates
+
 RUN ln -sf /usr/bin/php83 /usr/local/bin/php && \
     addgroup -S -g 82 www-data 2>/dev/null || true && \
     adduser -S -D -H -u 82 -G www-data -s /sbin/nologin www-data 2>/dev/null || true
 
 RUN curl -fsSLo /usr/local/bin/wp \
       https://github.com/wp-cli/wp-cli/releases/download/v2.12.0/wp-cli-2.12.0.phar && \
+    echo "be928f6b8ca1e8dfb9d2f4b75a13aa4aee0896f8a9a0a1c45cd5d2c98605e6172e6d014dda2e27f88c98befc16c040cbb2bd1bfa121510ea5cdf5f6a30fe8832  /usr/local/bin/wp" | sha512sum -c - && \
     chmod +x /usr/local/bin/wp
 
 RUN curl -fsSLo /tmp/wp.tar.gz \
       "https://wordpress.org/wordpress-${WORDPRESS_VERSION}.tar.gz" && \
+    echo "${WORDPRESS_SHA1}  /tmp/wp.tar.gz" | sha1sum -c - && \
     mkdir -p /usr/local/share/wordpress-core && \
     tar -xzf /tmp/wp.tar.gz -C /usr/local/share/wordpress-core --strip-components=1 && \
     rm /tmp/wp.tar.gz
