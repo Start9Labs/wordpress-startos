@@ -146,20 +146,24 @@ export const main = sdk.setupMain(async ({ effects }) => {
       },
       ready: {
         display: i18n('Web Server'),
-        fn: () => {
-          const ports = sites.map((s) => s.port)
-          if (ports.length === 0) {
-            return Promise.resolve({
+        fn: async () => {
+          if (sites.length === 0) {
+            return {
               result: 'success' as const,
               message: i18n(
                 'No sites configured. Use the Manage Sites action to add one.',
               ),
-            })
+            }
           }
-          return sdk.healthCheck.checkPortListening(effects, ports[0], {
-            successMessage: i18n('Web server is serving sites'),
-            errorMessage: i18n('Web server is not accepting connections'),
-          })
+          const results = await Promise.all(
+            sites.map(({ port }) =>
+              sdk.healthCheck.checkPortListening(effects, port, {
+                successMessage: i18n('Web server is serving sites'),
+                errorMessage: i18n('Web server is not accepting connections'),
+              }),
+            ),
+          )
+          return results.find((r) => r.result !== 'success') ?? results[0]
         },
       },
       requires: ['php-fpm'],

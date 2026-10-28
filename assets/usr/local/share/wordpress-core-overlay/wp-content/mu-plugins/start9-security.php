@@ -16,9 +16,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 // defense in depth in case the proxy is reconfigured).
 add_filter( 'xmlrpc_enabled', '__return_false' );
 
-// Remove the REST API users endpoint — it leaks usernames to unauthenticated
-// requests. Logged-in admins still have full access through wp-admin.
+// Remove the REST API users endpoint for anonymous requests — it leaks
+// usernames. The block editor needs it, so signed-in users keep it.
 add_filter( 'rest_endpoints', function ( $endpoints ) {
+    if ( is_user_logged_in() ) {
+        return $endpoints;
+    }
     foreach ( array(
         '/wp/v2/users',
         '/wp/v2/users/(?P<id>[\d]+)',
