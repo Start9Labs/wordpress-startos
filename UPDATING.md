@@ -15,7 +15,7 @@ This package wraps [WordPress](https://github.com/WordPress/WordPress). Each pac
 
 ## Applying the bump
 
-- **WordPress core**: bump `ARG WORDPRESS_VERSION` in `Dockerfile`. Optionally update `ARG WORDPRESS_SHA256` to the published checksum from `https://wordpress.org/wordpress-<version>.tar.gz.sha256`.
+- **WordPress core**: bump `ARG WORDPRESS_VERSION` in `Dockerfile`. Update `ARG WORDPRESS_SHA1` to the published checksum from `https://wordpress.org/wordpress-<version>.tar.gz.sha1`; the build fails on a mismatch. (WordPress.org publishes `.sha1` and `.md5` only.)
 - **MariaDB**: bump `images.mariadb.source.dockerTag` in `startos/manifest/index.ts`.
 - **Package release version**: update `version` and `releaseNotes` in `startos/versions/current.ts` in place. Spin off a historical version file and add it to `other` only when the outgoing version carries a non-empty migration.
 

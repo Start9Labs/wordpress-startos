@@ -3,14 +3,23 @@
  * Plugin Name: Start9 Security Hardening
  * Description: Baseline hardening applied to every site by wordpress-startos.
  *              Disables XML-RPC, hides the REST API users endpoint, blocks
- *              author enumeration, and strips the WP version from output.
+ *              author enumeration, strips the WP version from output, and
+ *              trusts the system certificate list.
  * Author:      wordpress-startos
- * Version:     1.0
+ * Version:     1.1
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
+
+// Trust the image's CA list, not the copy core bundles, which lags distrust decisions.
+const START9_CA_BUNDLE = '/etc/ssl/certs/ca-certificates.crt';
+WpOrg\Requests\Requests::set_certificate_path( START9_CA_BUNDLE );
+add_filter( 'http_request_args', function ( $args ) {
+    $args['sslcertificates'] = START9_CA_BUNDLE;
+    return $args;
+} );
 
 // Disable XML-RPC at the application layer (nginx blocks it too; this is
 // defense in depth in case the proxy is reconfigured).
